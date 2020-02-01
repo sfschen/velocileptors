@@ -41,7 +41,7 @@ In addition there are a few supporting modules:
 
 (1) qfuncfft.py: a class to compute LPT kernels using 1d-ffts
 
-(2) spherical_bessel_transform.py and spherical_bessel_transform_fftw.py: two fftlong routines, one that uses fftw and the other numpy
+(2) spherical_bessel_transform.py and spherical_bessel_transform_fftw.py: two fftlog routines, one that uses fftw and the other numpy
 
 (3) loginterp.py: a function for performing log-extrapolated interpolating functions.
 
