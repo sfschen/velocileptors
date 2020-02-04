@@ -56,7 +56,7 @@ class MomentExpansion(VelocityMoments):
 
         nu2 = nu**2
         ret = pk - f * kv * nu2 * vk - 0.5 * f**2 * kv**2 * nu2 * ( s0 + s2* nu2 )
-        ret += ct3 /6. * self.kv**2 * nu**4 * self.pktable[:,1]
+        ret += ct3 /6. * self.kv**2 * nu2**2 * self.pktable[:,1]
 
         return self.kv, ret
 
