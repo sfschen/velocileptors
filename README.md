@@ -1,7 +1,10 @@
 # velocilptors
 Velocity-based LPT expansions of redshift-space distortions.
 
-This code requires numpy, scipy and pyFFTW, the python wrapper for FFTW:
+This code computes the real- and redshift-space power spectra and correlation functions
+of biased tracers using 1-loop Lagrangian perturbation theory.
+
+The code requires numpy, scipy and pyFFTW (the python wrapper for FFTW):
 
 https://hgomersall.github.io/pyFFTW/
 
