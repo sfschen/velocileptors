@@ -64,7 +64,8 @@ parameters is available:
 
 (2) alpha0, alpha2, alpha4: counter terms for ell=0, 2 and 4.
 
-(3) sn, sn2: stochastic contributions to P_real_(k) and sigma^2.
+(3) sn, sn2: stochastic contributions to P_real(k) and sigma^2
+    [e.g. shot-noise and finger-of-god dispersion].
 
 
 
