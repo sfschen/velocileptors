@@ -22,8 +22,8 @@ def loginterp(x, y, yint = None, side = "both", lorder = 9, rorder = 9, lp = 1, 
         print( 'In function - ', inspect.getouterframes( inspect.currentframe() )[2][3])
         print('WARNING: Runaway index on right side, bad interpolation. Reft index = %0.3e at %0.3e'%(rneff, x[r]))
 
-    xl = np.logspace(-12, np.log10(x[l]), 10**5.)
-    xr = np.logspace(np.log10(x[r]), 12., 10**5.)
+    xl = np.logspace(-12, np.log10(x[l]), 10**5)
+    xr = np.logspace(np.log10(x[r]), 12., 10**5)
     yl = y[l]*(xl/x[l])**lneff
     yr = y[r]*(xr/x[r])**rneff
 
