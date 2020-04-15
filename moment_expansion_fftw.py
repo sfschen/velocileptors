@@ -1,13 +1,13 @@
 import numpy as np
-
 from velocity_moments_fftw import VelocityMoments
+
 
 class MomentExpansion(VelocityMoments):
     '''
-    Class to calculate the redshift space power spectrum in the moment expansion approach.
+    Class to calculate the redshift space power spectrum in the
+    moment expansion approach.
     
     Inherits the VelocityMoments class which itself inherits the CLEFT class.
-    
     '''
 
     def __init__(self, *args, kmin = 1e-3, kmax = 3, nk = 100, **kw):
@@ -32,12 +32,12 @@ class MomentExpansion(VelocityMoments):
         self.convert_sigma_bases(basis='Legendre')
         
 
-    def compute_redshift_space_power_at_mu(self, bvec, f, nu, counterterm_c3=0, reduced=False):
+    def compute_redshift_space_power_at_mu(self,bvec,f,mu,counterterm_c3=0,reduced=False):
         '''
         Moment expansion approach.
         
-        The "reduced" basis of stochastic and counterterms is equivalent to Equation 5.1 in the paper.
-        
+        The "reduced" basis of stochastic and counterterms is equivalent
+        to Equation 5.1 in Chen, Vlah & White (2020).
         '''
         # If using a reduced vector, make a new one.
         if reduced:
@@ -47,17 +47,16 @@ class MomentExpansion(VelocityMoments):
         else:
             bv = bvec
             ct3 = counterterm_c3
-        
-        
+        #
         # Compute each moment
         kv, pk = self.combine_bias_terms_pk(bv)
         kv, vk = self.combine_bias_terms_vk(bv)
         kv, s0, s2 = self.combine_bias_terms_sk(bv,basis='Polynomial')
-
-        nu2 = nu**2
-        ret = pk - f * kv * nu2 * vk - 0.5 * f**2 * kv**2 * nu2 * ( s0 + s2* nu2 )
-        ret += ct3 /6. * self.kv**2 * nu2**2 * self.pktable[:,1]
-
+        #
+        mu2 = mu**2
+        ret = pk - f * kv * mu2 * vk -\
+              0.5 * f**2 * kv**2 * mu2 * ( s0 + s2* mu2 ) +\
+              ct3 /6. * self.kv**2 * mu2**2 * self.pktable[:,1]
         return self.kv, ret
 
 
