@@ -32,7 +32,7 @@ class MomentExpansion(VelocityMoments):
         self.convert_sigma_bases(basis='Legendre')
         
 
-    def compute_redshift_space_power_moments(self, bvec, f, nu, counterterm_c3=0, reduced=False):
+    def compute_redshift_space_power_at_mu(self, bvec, f, nu, counterterm_c3=0, reduced=False):
         '''
         Moment expansion approach.
         
@@ -74,7 +74,7 @@ class MomentExpansion(VelocityMoments):
         self.pknutable = np.zeros((len(nus),self.nk))
         
         for ii, nu in enumerate(nus_calc):
-            self.pknutable[ii,:] = self.compute_redshift_space_power_moments(bvec,f,nu,reduced=reduced,counterterm_c3=counterterm_c3)[1]
+            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(bvec,f,nu,reduced=reduced,counterterm_c3=counterterm_c3)[1]
                 
         self.pknutable[ngauss:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
         

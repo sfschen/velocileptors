@@ -43,7 +43,7 @@ if __name__=="__main__":
     pars   = [0.7, 0.5, -0.3, 10, 20, -60, 1800, -1000]
     # Compute the wedges, here we'll just to a single mu.
     mu     = 0.5
-    kw,pkw = mome.compute_redshift_space_power_moments(pars,f,mu,reduced=True)
+    kw,pkw = mome.compute_redshift_space_power_at_mu(pars,f,mu,reduced=True)
     print("First few k bins for mu=",mu)
     for k,p in zip(kw[:10],pkw[:10]):
         print("{:12.4e} {:12.4e}".format(k,p))
