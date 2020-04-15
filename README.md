@@ -1,9 +1,10 @@
 # velocileptors
 Velocity-based LPT and EPT expansions of redshift-space distortions.
 
-This code computes the real- and redshift-space power spectra and correlation functions
-of biased tracers using 1-loop perturbation theory (with effective field theory
-counter terms and a cubic biasing scheme).
+This code computes the real- and redshift-space power spectra and
+correlation functions of biased tracers using 1-loop perturbation
+theory (with effective field theory counter terms and a cubic biasing
+scheme).
 
 The code requires numpy, scipy and pyFFTW (the python wrapper for FFTW):
 
@@ -11,9 +12,24 @@ https://hgomersall.github.io/pyFFTW/
 
 to run. Note that pyFFTW is pip installable and available from conda-forge.
 
-An example calculation to reproduce the plots in the paper is given in Moment Expansion Example.ipynb.
-A short notebook detailing the same steps for the Fourier Streaming Model is given in Fourier Streaming Model Example.ipynb.
-Also included is Gaussian Streaming Model Example.ipynb that runs through how to produce the correlation function multipoles.
+An example calculation to reproduce the plots in the paper is given
+in "Moment Expansion Example.ipynb".
+A short notebook detailing the same steps for the Fourier Streaming Model
+is given in "Fourier Streaming Model Example.ipynb".
+Also included is "Gaussian Streaming Model Example.ipynb" that runs through
+how to produce the correlation function multipoles.
+An example of the most common use-cases is given in "lpt_examples.py".
+
+For most situations computing the power spectrum wedges or multipoles
+is as simple as:
+
+```
+from   moment_expansion_fftw import MomentExpansion
+
+mome        = MomentExpansion(k,pk,shear=True,threads=nthreads)
+kw,pkw      = mome.compute_redshift_space_power_moments(pars,f,mu,reduced=True)
+kl,p0,p2,p4 = mome.compute_redshift_space_power_multipoles(pars,f,reduced=True)
+```
 
 
 The core rsd modules are:
