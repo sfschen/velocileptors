@@ -2,7 +2,8 @@
 Velocity-based LPT and EPT expansions of redshift-space distortions.
 
 This code computes the real- and redshift-space power spectra and correlation functions
-of biased tracers using 1-loop perturbation theory.
+of biased tracers using 1-loop perturbation theory (with effective field theory
+counter terms and a cubic biasing scheme).
 
 The code requires numpy, scipy and pyFFTW (the python wrapper for FFTW):
 
