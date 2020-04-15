@@ -9,7 +9,7 @@ The code requires numpy, scipy and pyFFTW (the python wrapper for FFTW):
 
 https://hgomersall.github.io/pyFFTW/
 
-to run. Note that pyFFTW is pip installable.
+to run. Note that pyFFTW is pip installable and available from conda-forge.
 
 An example calculation to reproduce the plots in the paper is given in Moment Expansion Example.ipynb.
 A short notebook detailing the same steps for the Fourier Streaming Model is given in Fourier Streaming Model Example.ipynb.
