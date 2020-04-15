@@ -1,5 +1,5 @@
-# velocilptors
-Velocity-based LPT expansions of redshift-space distortions.
+# velocileptors
+Velocity-based LPT and EPT expansions of redshift-space distortions.
 
 This code computes the real- and redshift-space power spectra and correlation functions
 of biased tracers using 1-loop Lagrangian perturbation theory.
