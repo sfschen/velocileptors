@@ -4,8 +4,8 @@ velocity statistics.
 
 This code computes the real- and redshift-space power spectra and
 correlation functions of biased tracers using 1-loop perturbation
-theory (with effective field theory counter terms and a cubic biasing
-scheme) as well as the real-space pairwise velocity moments.
+theory (with effective field theory counter terms and up to cubic
+biasing) as well as the real-space pairwise velocity moments.
 
 The code requires numpy, scipy and pyFFTW (the python wrapper for FFTW):
 
@@ -57,13 +57,14 @@ where the parameters are:
 
 
 or (if you are interested in just the redshift-space power spectrum rather
-than all of the velocity statistics individually) a `reduced set`
+than all of the velocity statistics individually) a _reduced set_ of
+parameters is available:
 
 (1) b1, b2, bs:  the bias parameters up to quadratic order
 
 (2) alpha0, alpha2, alpha4: counter terms for ell=0, 2 and 4.
 
-(3) sn, sn2: stochastic contributions to P(k) and sigma^2.
+(3) sn, sn2: stochastic contributions to P_real_(k) and sigma^2.
 
 
 
