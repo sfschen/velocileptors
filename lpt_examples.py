@@ -15,12 +15,12 @@ def set_up():
        most time consuming part but only has to be done once.
        It is faster if you have a wisdom file already and
        pass the file name."""
-    nthr  = int(os.getenv('OMP_NUM_THREADS','1'))
-    z,D   = 0.8,0.6819
-    k,pk  = np.loadtxt("pk.dat").T
-    pk   *= D**2
-    mome  = MomentExpansion(k,pk,shear=True,threads=nthr,\
-              cutoff=10,extrap_min=-4,extrap_max=3,jn=10)
+    nthr       = int(os.getenv('OMP_NUM_THREADS','1'))
+    z,D        = 0.8,0.6819
+    klin,plin  = np.loadtxt("pk.dat").T
+    plin      *= D**2
+    mome = MomentExpansion(klin,plin,shear=True,threads=nthr,\
+             cutoff=10,extrap_min=-4,extrap_max=3,jn=10)
     return(mome)
     #
 
