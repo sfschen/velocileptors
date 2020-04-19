@@ -27,7 +27,7 @@ is as simple as:
 ```
 from   moment_expansion_fftw import MomentExpansion
 
-mome        = MomentExpansion(klin,pklin,shear=True,threads=nthreads)
+mome        = MomentExpansion(klin,pklin,threads=nthreads)
 kw,pkw      = mome.compute_redshift_space_power_at_mu(pars,f,mu,reduced=True)
 kl,p0,p2,p4 = mome.compute_redshift_space_power_multipoles(pars,f,reduced=True)
 ```
