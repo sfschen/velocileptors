@@ -36,11 +36,11 @@ if __name__=="__main__":
     # Set up some fiducial values for the parameters -- we'll use the
     # examples from the paper and we'll used the "reduced" parameter set:
     # pars: the biases and counter terms.
-    #    b1,b2,bs: linear quadratic parameters
+    #    b1,b2,bs, b3: linear, quadratic & cubic parameters
     #    alpha0,alpha2,alpha4: counterterms
     #    sn,s0: stochastic contributions to P(k) and sigma^2.
     z,f    = 0.80,0.8076
-    pars   = [0.7, 0.5, -0.3, 10, 20, -60, 1800, -1000]
+    pars   = [0.7, 0.5, -0.3, 0.0, 10, 20, -60, 1800, -1000]
     # Compute the wedges, here we'll just to a single mu.
     mu     = 0.5
     kw,pkw = mome.compute_redshift_space_power_at_mu(pars,f,mu,reduced=True)
