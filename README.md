@@ -45,11 +45,11 @@ All the rsd models use velocity spectra from velocity_moments_fftw.py, which its
 
 All the above "physics" modules take in bias vectors given by 
 
-bvec = [b1, b2, bs, alpha, alpha_v, alpha_s0, alpha_s2, sn, sv, s0]
+bvec = [b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, sn, sv, s0]
 
 where the parameters are:
 
-(1) b1, b2, bs: the bias parameters up to quadratic order
+(1) b1, b2, bs, b3: the bias parameters up to cubic order
 
 (2) alpha, alpha_v, alpha_s0, alpha_s2: the one-loop counterterms for each velocity component
 
@@ -60,7 +60,7 @@ or (if you are interested in just the redshift-space power spectrum rather
 than all of the velocity statistics individually) a _reduced set_ of
 parameters is available:
 
-(1) b1, b2, bs:  the bias parameters up to quadratic order
+(1) b1, b2, bs, b3:  the bias parameters up to cubic order
 
 (2) alpha0, alpha2, alpha4: counter terms for ell=0, 2 and 4.
 
