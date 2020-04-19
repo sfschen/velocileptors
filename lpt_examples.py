@@ -19,7 +19,7 @@ def set_up():
     z,D        = 0.8,0.6819
     klin,plin  = np.loadtxt("pk.dat").T
     plin      *= D**2
-    mome = MomentExpansion(klin,plin,shear=True,threads=nthr,\
+    mome = MomentExpansion(klin,plin,threads=nthr,\
              cutoff=10,extrap_min=-4,extrap_max=3,jn=10)
     return(mome)
     #
