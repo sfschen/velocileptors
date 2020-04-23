@@ -1,5 +1,6 @@
 # velocileptors
-Velocity-based LPT and EPT expansions of redshift-space distortions and
+Velocity-based perturbation theory (both Lagrangian (LPT) and Eulerian (EPT)
+formulations) expansions of redshift-space distortions and
 velocity statistics.
 
 This code computes the real- and redshift-space power spectra and
@@ -25,7 +26,7 @@ For most situations computing the power spectrum wedges or multipoles
 is as simple as:
 
 ```
-from   moment_expansion_fftw import MomentExpansion
+from LPT.moment_expansion_fftw import MomentExpansion
 
 mome        = MomentExpansion(klin,pklin,threads=nthreads)
 kw,pkw      = mome.compute_redshift_space_power_at_mu(pars,f,mu,reduced=True)
@@ -33,7 +34,8 @@ kl,p0,p2,p4 = mome.compute_redshift_space_power_multipoles(pars,f,reduced=True)
 ```
 
 
-The core rsd modules are:
+The core rsd modules are distributed into two directories, one for the LPT theory and
+one for the EPT theory (plus supporting routines in the Utils directory).  In LPT:
 
 (1) moment_expansion_fftw.py: this computes redshift-space power spectra using the moment expansion approach.
 
@@ -71,9 +73,9 @@ parameters is available:
 
 In addition there are a few supporting modules:
 
-(1) qfuncfft.py: a class to compute LPT kernels using 1d-ffts
+(1) qfuncfft.py: a class to compute PT kernels using 1d-ffts
 
-(2) spherical_bessel_transform.py and spherical_bessel_transform_fftw.py: two fftlog routines, one that uses fftw and the other numpy
+(2) spherical_bessel_transform.py and spherical_bessel_transform_fftw.py: two fftlog routines, one that uses numpy FFTs and the other fftw.
 
 (3) loginterp.py: a function for performing log-extrapolated interpolating functions.
 
