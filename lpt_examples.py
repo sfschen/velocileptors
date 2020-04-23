@@ -6,7 +6,7 @@
 #
 import numpy as np
 import os
-from   moment_expansion_fftw import MomentExpansion
+from   LPT.moment_expansion_fftw import MomentExpansion
 
 
 
