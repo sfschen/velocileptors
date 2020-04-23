@@ -17,7 +17,7 @@ def set_up():
        pass the file name."""
     nthr       = int(os.getenv('OMP_NUM_THREADS','1'))
     z,D        = 0.8,0.6819
-    klin,plin  = np.loadtxt("pk.dat").T
+    klin,plin  = np.loadtxt("pk.dat",unpack=True)
     plin      *= D**2
     mome = MomentExpansion(klin,plin,threads=nthr,\
              cutoff=10,extrap_min=-4,extrap_max=3,jn=10)
