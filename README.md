@@ -38,22 +38,12 @@ The core rsd modules are distributed into two directories, one for the LPT theor
 one for the EPT theory (plus supporting routines in the Utils directory).  See the READMEs
 in those directories for more information.
 
-All the "physics" modules take in bias vectors given by 
+For the most common case of computing the redshift-space power spectrum
+one can use a a _reduced set_ of parameters:
 
-bvec = [b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, sn, sv, s0]
+pars = [b1, b2, bs, b3] +  [alpha0, alpha2, alpha4] +  [sn, sn2]
 
-where the parameters are:
-
-(1) b1, b2, bs, b3: the bias parameters up to cubic order
-
-(2) alpha, alpha_v, alpha_s0, alpha_s2: the one-loop counterterms for each velocity component
-
-(3) sn, sv, s0: the stochastic contributions to the velocities
-
-
-or (if you are interested in just the redshift-space power spectrum rather
-than all of the velocity statistics individually) a _reduced set_ of
-parameters is available:
+where
 
 (1) b1, b2, bs, b3:  the bias parameters up to cubic order
 
@@ -63,7 +53,20 @@ parameters is available:
     [e.g. shot-noise and finger-of-god dispersion].
 
 
+If you additionally want access to the velocity statistics, then the
+full set of parameters is
 
+pars = [b1, b2, bs, b3] +  [alpha, alpha_v, alpha_s0, alpha_s2] +  [sn, sv, s0]
+
+where the parameters are:
+
+(1) b1, b2, bs, b3: the bias parameters up to cubic order
+
+(2) alpha, alpha_v, alpha_s0, alpha_s2: the one-loop counterterms for each velocity component
+
+(3) sn, sv, s0: the stochastic contributions to the velocities
+
+More details can be found in Chen, Vlah & White (2020).
 
 
 This code is related to the configuration-space based code https://github.com/martinjameswhite/CLEFT_GSM.
