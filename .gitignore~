@@ -1,9 +1,4 @@
-.DS_Store
-.ipynb_checkpoints
+__pycache__/
 *~
-.*
-old
-old/*
-__pycache__
-*/__pycache__
-*/*
+.ipynb*
+*/.ipynb*
