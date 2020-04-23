@@ -26,7 +26,7 @@ class RVEPT:
         
         self.kv = self.ept.kv
         self.plin  = loginterp(k, p)(self.kv)
-        self.plin_nw = loginterp(k, p_nw)(self.kv)
+        self.plin_nw = loginterp(k, pnw)(self.kv)
         self.plin_w = self.plin - self.plin_nw
         self.sigma_squared_bao = np.interp(self.rbao, self.ept_nw.qint, self.ept_nw.Xlin + self.ept_nw.Ylin/3.)
         self.damp_exp = - 0.5 * self.kv**2 * self.sigma_squared_bao

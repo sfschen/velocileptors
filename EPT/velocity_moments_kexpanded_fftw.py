@@ -14,7 +14,7 @@ class KEVelocityMoments(KECLEFT):
     
     '''
 
-    def __init__(self, *args, beyond_gauss = False, **kw):
+    def __init__(self, *args, beyond_gauss = True, **kw):
         '''
            Same keywords as the cleft_fftw class. Go look there!
         '''

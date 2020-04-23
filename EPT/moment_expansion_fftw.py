@@ -1,8 +1,9 @@
 import numpy as np
 
+from Utils.loginterp import loginterp
 from EPT.ept_fftw import EPT
 
-class REPT:
+class MomentExpansion:
 
     '''
     Class to compute IR-resummed velocity moments and RSD using the moment expansion appraoch in EPT.
@@ -21,9 +22,14 @@ class REPT:
         self.beyond_gauss = self.ept.beyond_gauss
         
         self.kv = self.ept.kv
+
+        self.plin  = loginterp(k, p)(self.kv)
+        self.plin_nw = loginterp(k, pnw)(self.kv)
+        self.plin_w = self.plin - self.plin_nw
         self.sigma_squared_bao = np.interp(self.rbao, self.ept_nw.qint, self.ept_nw.Xlin + self.ept_nw.Ylin/3.)
         self.damp_exp = - 0.5 * self.kv**2 * self.sigma_squared_bao
         self.damp_fac = np.exp(self.damp_exp)
+        self.plin_ir = self.plin_nw + self.plin_w * self.damp_exp
         
         
         self.pktable_nw = self.ept_nw.pktable_ept
@@ -106,35 +112,58 @@ class REPT:
     
     # The following functions combine the bias parameters and velocity moments into redshift-space power spectra
     # If beyond_gauss is false use the first two velocity moments (v(k) and sigma(k)) plus the counterterm ansatz for the third moment.
-    # In this case the parameters alpha_g1, alpha_g3, alpha_k2, stoch_k0 are not used.
+    # In this case the parameters alpha_g1, alpha_g3, alpha_k2, stoch_k0 are not used--set to zero if desired.
     # Otherwise gives the full moment expansion expression up to one-loop order.
     
-    def combine_bias_terms_pkrsd(self,nu,f,\
-                                 b1,b2,bs,b3,\
-                                 alpha,alphav,alpha_s0,alpha_s2,alpha_g1,alpha_g3,alpha_k2,\
-                                 sn,sv,sigma0,stoch_k0,\
-                                 ct3 = 0, beyond_gauss=False):
+    def compute_redshift_space_power_at_mu(self,bvec,f,mu, counterterm_c3 = 0, beyond_gauss=False, reduced=True):
+        
+        if reduced:
+            b1, b2, bs, b3, alpha0, alpha2, alpha4, alpha6, sn, sn2, sn4 = bvec
+            alpha, alphav, alpha_s0, alpha_s2, alpha_g1, alpha_g3, alpha_k2 = alpha0, alpha2, 0, alpha4, 0, 0, alpha6
+            sn, sv, sigma0, stoch_k0 = sn, sn2, 0, sn4
+        else:
+            b1,b2,bs,b3,alpha,alphav,alpha_s0,alpha_s2,alpha_g1,alpha_g3,alpha_k2,sn,sv,sigma0,stoch_k0 = bvec
         
         kv = self.pktable[:,0]
-        nu2 = nu**2
+        mu2 = mu**2
         
         pk = self.combine_bias_terms_pk(b1,b2,bs,b3,alpha,sn)
         vk = self.combine_bias_terms_vk(b1,b2,bs,b3,alphav,sv)
         s0k, s2k = self.combine_bias_terms_sk(b1,b2,bs,b3,alpha_s0,alpha_s2,sigma0)
         
-        ret = pk - f*kv*nu2*vk - 0.5*f**2*kv**2*nu2 * (s0k + 0.5*s2k*(3*nu2-1) )
+        ret = pk - f*kv*mu2*vk - 0.5*f**2*kv**2*mu2 * (s0k + 0.5*s2k*(3*mu2-1) )
         
         if beyond_gauss:
             g1k, g3k = self.combine_bias_terms_gk(b1,b2,bs,b3,alpha_g1,alpha_g3)
-            k0k, k2k, k4k = self.combine_bias_terms_kk(b1,b2,bs,b3,alpha_k2,stoc_k0)
-            ret += 1./6 * f**3 * (kv*nu)**3 * (g1k * nu + g3k * nu**3)\
-                   + 1./24 * f**4 * (kv*nu)**4 * (k0k + k2k * nu2 + k4k * nu2**2)
+            k0k, k2k, k4k = self.combine_bias_terms_kk(b1,b2,bs,b3,alpha_k2,stoch_k0)
+            ret += 1./6 * f**3 * (kv*mu)**3 * (g1k * mu + g3k * mu**3)\
+                   + 1./24 * f**4 * (kv*mu)**4 * (k0k + k2k * mu2 + k4k * mu2**2)
         else:
-            ret += 1./6 * ct3 * kv**2 * nu**4 * self.pktable[:,-1]
+            ret += 1./6 * counterterm_c3 * kv**2 * mu**4 * self.plin_ir
         
         return kv, ret
+        
+    def compute_redshift_space_power_multipoles(self, bvec, f, counterterm_c3=0, ngauss=4, reduced=False):
+
+        # Generate the sampling
+        nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
+        nus_calc = nus[0:ngauss]
+        
+        L0 = np.polynomial.legendre.Legendre((1))(nus)
+        L2 = np.polynomial.legendre.Legendre((0,0,1))(nus)
+        L4 = np.polynomial.legendre.Legendre((0,0,0,0,1))(nus)
+        
+        self.pknutable = np.zeros((len(nus),self.nk))
+        
+        for ii, nu in enumerate(nus_calc):
+            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(bvec,f,nu,reduced=reduced,counterterm_c3=counterterm_c3)[1]
+                
+        self.pknutable[ngauss:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
+        
+        self.p0ktable = 0.5 * np.sum((ws*L0)[:,None]*self.pknutable,axis=0)
+        self.p2ktable = 2.5 * np.sum((ws*L2)[:,None]*self.pknutable,axis=0)
+        self.p4ktable = 4.5 * np.sum((ws*L4)[:,None]*self.pknutable,axis=0)
+        
+        return self.kv, self.p0ktable, self.p2ktable, self.p4ktable
                 
                 
-    def combine_bias_terms_pkrsd_reduced(self,nu,f,b1,b2,bs,b3,alpha,alpha2,alpha4,alpha6,sn,s2,sn4,gaussian=True):
-    
-        return self.combine_bias_terms_pkrsd(nu,f,b1,b2,bs,b3,alpha,alpha2,0,alpha4,0,alpha_6,0,sn,s2,0,sn4, gaussian=gaussian)

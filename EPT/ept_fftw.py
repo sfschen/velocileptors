@@ -1,5 +1,6 @@
 import numpy as np
 
+from Utils.loginterp import loginterp
 from EPT.velocity_moments_kexpanded_fftw import KEVelocityMoments
 
 class EPT(KEVelocityMoments):
@@ -20,6 +21,8 @@ class EPT(KEVelocityMoments):
         
         self.nk, self.kmin, self.kmax = nk, kmin, kmax
         self.make_tables(kmin=kmin, kmax=kmax, nk = nk)
+        self.kv = self.pktable[:,0]
+        self.plin = loginterp(self.k, self.p)(self.kv)
 
         # Now convert to EPT table
         self.convert_ptable()
@@ -44,7 +47,7 @@ class EPT(KEVelocityMoments):
         self.pktable_ept[:,5] = pktable[:,9] # b2bs
         self.pktable_ept[:,6] = pktable[:,10] # bssq
         self.pktable_ept[:,7] = 2*pktable[:,3] - pktable[:,2] - 8./21*pktable[:,5] + 2./7*pktable[:,8] # b1b3
-        self.pktable_ept[:,8] = pktable[:,0]**2 * pktable[:,-1] # ct
+        self.pktable_ept[:,8] = self.kv**2 * self.plin # ct
         
         # linear theory table
         self.pktable_ept_linear = np.zeros( (self.nk, 9)  )
@@ -70,7 +73,7 @@ class EPT(KEVelocityMoments):
         self.vktable_ept[:,6] = vktable[:,8] # b1bs
         self.vktable_ept[:,7] = vktable[:,2] - vktable[:,1] - vktable[:,3] \
         - 8./21*(vktable[:,4] - vktable[:,5]) + 2./7 * (vktable[:,7] - vktable[:,8]) # b3
-        self.vktable_ept[:,8] = self.pktable[:,0] * self.pktable[:,-1]
+        self.vktable_ept[:,8] = self.kv * self.plin # ct
 
         # linear theory table
         self.vktable_ept_linear = np.zeros( (self.nk, 9)  )
@@ -92,7 +95,7 @@ class EPT(KEVelocityMoments):
         self.s0ktable_ept[:,3] = s0[:,3] # b1sq
         self.s0ktable_ept[:,4] = s0[:,4] # b2
         self.s0ktable_ept[:,5] = s0[:,7] # bs
-        self.s0ktable_ept[:,6] = self.pktable[:,-1] # ct
+        self.s0ktable_ept[:,6] = self.plin # ct
         
         self.s2ktable_ept[:,0] = s2[:,0]
         self.s2ktable_ept[:,1] = s2[:,1] - s2[:,2] + s2[:,3] + 8./21*s2[:,4] - 2./7*s2[:,7]  # 1
@@ -100,7 +103,7 @@ class EPT(KEVelocityMoments):
         self.s2ktable_ept[:,3] = s2[:,3] # b1sq
         self.s2ktable_ept[:,4] = s2[:,4] # b2
         self.s2ktable_ept[:,5] = s2[:,7] # bs
-        self.s2ktable_ept[:,6] = self.pktable[:,-1] # ct
+        self.s2ktable_ept[:,6] = self.plin # ct
         
         # linear theory table
         self.s0ktable_ept_linear = np.zeros( (self.nk, 7))
@@ -123,12 +126,12 @@ class EPT(KEVelocityMoments):
         self.g1ktable_ept[:,0] = self.g1[:,0]
         self.g1ktable_ept[:,1] = self.g1[:,1] - self.g1[:,2] # 1
         self.g1ktable_ept[:,2] = self.g1[:,2] # b1
-        self.g1ktable_ept[:,3] = self.pktable[:,-1] / self.pktable[:,0] # ct
+        self.g1ktable_ept[:,3] = self.plin/self.kv # ct
         
         self.g3ktable_ept[:,0] = self.g3[:,0]
         self.g3ktable_ept[:,1] = self.g3[:,1] - self.g3[:,2]
         self.g3ktable_ept[:,2] = self.g3[:,2]
-        self.g3ktable_ept[:,3] = self.pktable[:,-1] / self.pktable[:,0]
+        self.g3ktable_ept[:,3] = self.plin/self.kv
         
     
     def combine_bias_terms_pk(self,b1,b2,bs,b3,alpha,sn):
