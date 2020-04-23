@@ -44,7 +44,9 @@ if __name__=="__main__":
     cterms = [10.0,20.,-60.]
     stoch  = [1800.,-1000.]
     pars   = biases + cterms + stoch
-    # Compute the wedges, here we'll just to a single mu.
+    # Compute the wedges, here we'll just to a single mu.  Note if we
+    # just wanted the real-space power spectrum we could pass mu=0 to
+    # compute_redshift_space_power_at_mu.  Here we'll do mu=0.5:
     mu     = 0.5
     kw,pkw = mome.compute_redshift_space_power_at_mu(pars,f,mu,reduced=True)
     print("First few k bins for mu=",mu)
