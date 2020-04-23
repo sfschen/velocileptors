@@ -9,17 +9,16 @@ from LPT.velocity_moments_fftw import VelocityMoments
 
 class GaussianStreamingModel(VelocityMoments):
     '''
-    Class to calculate the redshift space correlation function using the Gaussian streaming model.
+    Class to calculate the redshift space correlation function
+    using the Gaussian streaming model.
     
     Inherits the VelocityMoments class which itself inherits the CLEFT class.
-    
     '''
 
     def __init__(self, *args, kmin = 3e-4, kmax = 3, nk = 200, **kw):
         '''
-         Same keywords and arguments as the other two classes for now.
+        Same keywords and arguments as the other two classes for now.
         '''
-        
         # Setup ffts etc.
         VelocityMoments.__init__(self, *args, **kw)
 
@@ -43,7 +42,6 @@ class GaussianStreamingModel(VelocityMoments):
 
     def setup_config_vels(self):
         # Fourier transform the velocity moments
-        
         # the correlation function
         self.xitable = np.zeros((len(self.rint),13))
 
@@ -113,10 +111,7 @@ class GaussianStreamingModel(VelocityMoments):
         '''
         Calculate velocity moments and turn into cumulants.
         The bvec format is [b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2]
-        
         '''
-
-
         # Compute each moment
         self.xieft = self.ximatter + b1*self.xitable[:,1] + b1**2*self.xitable[:,2]\
         + b2*self.xitable[:,3] + b1*b2*self.xitable[:,4] + b2**2 * self.xitable[:,5]\
@@ -142,7 +137,9 @@ class GaussianStreamingModel(VelocityMoments):
 
 
     def compute_xi_rsd(self, sperp, spar, f, b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2, rwidth=100, Nint=10000, update_cumulants=True):
-
+        '''
+        Compute the redshift-space xi(sperpendicular,sparallel).
+        '''
         # If cumulants have already been computed, skip this step:
         if update_cumulants:
             self.compute_cumulants(b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2)
@@ -159,13 +156,12 @@ class GaussianStreamingModel(VelocityMoments):
         
         integrand = xi_int * np.exp( -0.5 * (ys - v_int)**2 / s_int ) / np.sqrt(2*np.pi*s_int)
         integrand[np.isnan(integrand)] = 0.
-        
         return np.trapz(integrand, x=ys) - 1
 
 
     def compute_xi_ell(self, s, f, b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2, rwidth=100, Nint=10000, ngauss=4):
         '''
-        Compute correlation function multipoles
+        Compute the redshift-space correlation function multipoles
         '''
         # Compute the cumulants
         self.compute_cumulants(b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2)
@@ -182,9 +178,22 @@ class GaussianStreamingModel(VelocityMoments):
         xi0, xi2, xi4 = 0,0,0
         for ii, nu in enumerate(nus_calc):
             xi_nu = self.compute_xi_rsd(s*np.sqrt(1-nu**2),s*nu, f, b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2, rwidth=rwidth, Nint=Nint, update_cumulants=False)
-
             xi0 += xi_nu * L0[ii] * 1 * ws[ii]
             xi2 += xi_nu * L2[ii] * 5 * ws[ii]
             xi4 += xi_nu * L4[ii] * 9 * ws[ii]
-            
         return xi0, xi2, xi4
+
+
+    def compute_xi_real(self, s,  b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2, rwidth=100, Nint=10000):
+        '''
+        Compute the real-space correlation function.
+        '''
+        # This is just the zeroth moment:
+        xieft = self.ximatter + b1*self.xitable[:,1] + b1**2*self.xitable[:,2]\
+        + b2*self.xitable[:,3] + b1*b2*self.xitable[:,4]\
+        + b2**2 * self.xitable[:,5]\
+        + bs*self.xitable[:,6] + b1*bs*self.xitable[:,7]\
+        + b2*bs*self.xitable[:,8]\
+        + bs**2*self.xitable[:,9] + b3*self.xitable[:,10]\
+        + b1*b3*self.xitable[:,11] + alpha*self.xict
+        return(xieft)
