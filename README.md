@@ -35,17 +35,10 @@ kl,p0,p2,p4 = mome.compute_redshift_space_power_multipoles(pars,f,reduced=True)
 
 
 The core rsd modules are distributed into two directories, one for the LPT theory and
-one for the EPT theory (plus supporting routines in the Utils directory).  In LPT:
+one for the EPT theory (plus supporting routines in the Utils directory).  See the READMEs
+in those directories for more information.
 
-(1) moment_expansion_fftw.py: this computes redshift-space power spectra using the moment expansion approach.
-
-(2) gaussian_streaming_model_fftw.py: this computes redshift-space correlation functions using the Gaussian streaming model.
-
-(3) fourier_streaming_model_fftw.py: this computes redshift-space power spectra using the Fourier streaming model. 
-
-All the rsd models use velocity spectra from velocity_moments_fftw.py, which itself inherits the real-space power spectrum module cleft_fftw.py.
-
-All the above "physics" modules take in bias vectors given by 
+All the "physics" modules take in bias vectors given by 
 
 bvec = [b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, sn, sv, s0]
 
@@ -71,12 +64,6 @@ parameters is available:
 
 
 
-In addition there are a few supporting modules:
 
-(1) qfuncfft.py: a class to compute PT kernels using 1d-ffts
-
-(2) spherical_bessel_transform.py and spherical_bessel_transform_fftw.py: two fftlog routines, one that uses numpy FFTs and the other fftw.
-
-(3) loginterp.py: a function for performing log-extrapolated interpolating functions.
 
 This code is related to the configuration-space based code https://github.com/martinjameswhite/CLEFT_GSM.
