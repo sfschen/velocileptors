@@ -12,7 +12,9 @@ The code requires numpy, scipy and pyFFTW (the python wrapper for FFTW):
 
 https://hgomersall.github.io/pyFFTW/
 
-to run. Note that pyFFTW is pip installable and available from conda-forge.
+to run. Note that pyFFTW is pip and conda installable and available
+from conda-forge (we have found the conda-forge channel to be the
+most reliable).
 
 An example calculation to reproduce the plots in the paper is given
 in "Moment Expansion Example.ipynb".
