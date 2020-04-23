@@ -3,7 +3,6 @@ from LPT.velocity_moments_fftw import VelocityMoments
 
 
 class MomentExpansion(VelocityMoments):
-
     '''
     Class to calculate the redshift space power spectrum in the
     moment expansion approach.
@@ -11,22 +10,25 @@ class MomentExpansion(VelocityMoments):
     Inherits the VelocityMoments class which itself inherits the CLEFT class.
     
     Can Operate in two main modes:
-    (1) If beyond_gauss is set to true, this computes the full 1-loop redshift space power spectrum in LPT
-    (2) Otherwise, it uses the counterterm ansatz for the third moment, shown to be an excellent approximaiton compared to data.
+    (1) If beyond_gauss is set to true, this computes the full 1-loop
+        redshift space power spectrum in LPT
+    (2) Otherwise, it uses the counterterm ansatz for the third moment,
+        shown to be an excellent approximaiton compared to data.
     
-    Also, for both (1) and (2) one can choose the full basis of bias/counterterm/stochastic terms for the velocities
-    OR a reduced basis summarizing degenerate terms that appear only together for the redshift-space P(k).
+    Also, for both (1) and (2) one can choose the full basis of
+    bias/counterterm/stochastic terms for the velocities OR a reduced
+    basis summarizing degenerate terms that appear only together for
+    the redshift-space P(k).
+    [This is documented in Equation 5.1 of Chen, Vlah and White (2020).]
     
-    This is documented in Equation 5.1 of Chen, Vlah and White (2020).
-    
-    Note that in practice some parameters, such as b3, might be set additionally to zero to restrict parameter space.
+    Note that in practice some parameters, such as b3, might be set
+    additionally to zero to restrict parameter space.
     We leave this up to the user.
-    
     '''
 
     def __init__(self, *args, kmin = 1e-3, kmax = 3, nk = 100, **kw):
         '''
-         Same keywords and arguments as the other two classes for now.
+        Same keywords and arguments as the other two classes for now.
         '''
         
         # Setup ffts etc.
@@ -62,9 +64,7 @@ class MomentExpansion(VelocityMoments):
         to Equation 5.1 in Chen, Vlah & White (2020).
         '''
         # If using a reduced vector, make a new one.
-        
         mu2 = mu**2
-        
         if self.beyond_gauss:
             if reduced:
                 b1, b2, bs, b3, alpha0, alpha2, alpha4, alpha6, sn, sn2, sn4 = bvec
