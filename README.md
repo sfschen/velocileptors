@@ -37,36 +37,42 @@ kl,p0,p2,p4 = mome.compute_redshift_space_power_multipoles(pars,f,reduced=True)
 
 
 The core rsd modules are distributed into two directories, one for the LPT theory and
-one for the EPT theory (plus supporting routines in the Utils directory).  See the READMEs
-in those directories for more information.
+one for the EPT theory (plus supporting routines in the Utils directory). Running the EPT
+version of the above simply requires substituting the "LPT" for "EPT."
+See the READMEs in those directories for more information.
 
 For the most common case of computing the redshift-space power spectrum
 one can use a a _reduced set_ of parameters:
 
-pars = [b1, b2, bs, b3] +  [alpha0, alpha2, alpha4] +  [sn, sn2]
+pars = [b1, b2, bs, b3] +  [alpha0, alpha2, alpha4, alpha6] +  [sn, sn2, sn4]
 
 where
 
 (1) b1, b2, bs, b3:  the bias parameters up to cubic order
 
-(2) alpha0, alpha2, alpha4: counter terms of the form mu^n.
+(2) alpha0, alpha2, alpha4, alpha6: counter terms of the form mu^n.
 
-(3) sn, sn2: stochastic contributions to P_real(k) and sigma^2
+(3) sn, sn2, sn4: stochastic contributions to P_real(k), sigma^2, and the fourth moment kappa.
     [e.g. shot-noise and finger-of-god dispersion].
 
 
 If you additionally want access to the velocity statistics, then the
 full set of parameters is
 
-pars = [b1, b2, bs, b3] +  [alpha, alpha_v, alpha_s0, alpha_s2] +  [sn, sv, s0]
+pars = [b1, b2, bs, b3] +  [alpha, alpha_v, alpha_s0, alpha_s2, alpha_g1, alpha_g3, alpha_k2] +  [sn, sv, s0, s4]
 
 where the parameters are:
 
 (1) b1, b2, bs, b3: the bias parameters up to cubic order
 
-(2) alpha, alpha_v, alpha_s0, alpha_s2: the one-loop counterterms for each velocity component
+(2) alpha, alpha_v, alpha_s0, alpha_s2, alpha_g1, alpha_g3, alpha_k2: the one-loop counterterms for each velocity component
 
-(3) sn, sv, s0: the stochastic contributions to the velocities
+(3) sn, sv, s0, s4: the stochastic contributions to the velocities
+
+Since the expansion for realistic samples is saturated at the third moment, for most
+practical purposes one can set beyond_gauss = False, in which case the code only uses
+up to sigma(k), and uses a counterterm ansatz for the third and fourth moments. In this
+case the parameters alpha_g1, alpha_g3, alpha_k2, and s4 are not used.
 
 More details can be found in Chen, Vlah & White (2020).
 
