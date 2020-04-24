@@ -1,5 +1,7 @@
 import numpy as np
 
+from scipy.signal import savgol_filter
+
 from Utils.loginterp import loginterp
 from EPT.ept_fftw import EPT
 
@@ -12,19 +14,27 @@ class MomentExpansion:
     
     '''
     
-    def __init__(self, k, p, pnw, *args, rbao = 110, kmin = 1e-2, kmax = 0.5, nk = 100, **kw):
+    def __init__(self, k, p, pnw=None, *args, rbao = 110, kmin = 1e-2, kmax = 0.5, nk = 100, **kw):
         
         self.nk, self.kmin, self.kmax = nk, kmin, kmax
         self.rbao = rbao
         
         self.ept = EPT( k, p, kmin=kmin, kmax=kmax, **kw)
-        self.ept_nw = EPT( k, pnw, kmin=kmin, kmax=kmax, **kw)
+        if pnw is None:
+            knw = self.ept.kint
+            Nfilter =  np.ceil(np.log(7) /  np.log(knw[-1]/knw[-2])) // 2 * 2 + 1 # filter length ~ log span of one oscillation from k = 0.01
+            print(Nfilter)
+            pnw = savgol_filter(self.ept.pint, int(Nfilter), 4)
+        else:
+            knw, pnw = k, pnw
+          
+        self.ept_nw = EPT( knw, pnw, kmin=kmin, kmax=kmax, **kw)
         self.beyond_gauss = self.ept.beyond_gauss
         
         self.kv = self.ept.kv
 
         self.plin  = loginterp(k, p)(self.kv)
-        self.plin_nw = loginterp(k, pnw)(self.kv)
+        self.plin_nw = loginterp(knw, pnw)(self.kv)
         self.plin_w = self.plin - self.plin_nw
         self.sigma_squared_bao = np.interp(self.rbao, self.ept_nw.qint, self.ept_nw.Xlin + self.ept_nw.Ylin/3.)
         self.damp_exp = - 0.5 * self.kv**2 * self.sigma_squared_bao
