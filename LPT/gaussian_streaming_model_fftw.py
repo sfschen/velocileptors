@@ -107,7 +107,7 @@ class GaussianStreamingModel(VelocityMoments):
         
         
     
-    def compute_cumulants(self, b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2):
+    def compute_cumulants(self, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog):
         '''
         Calculate velocity moments and turn into cumulants.
         '''
