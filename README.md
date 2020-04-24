@@ -51,12 +51,17 @@ where
 
 (1) b1, b2, bs, b3:  the bias parameters up to cubic order
 
-(2) alpha0, alpha2, alpha4, alpha6: counter terms of the form mu^n.
+(2) alpha0, alpha2, alpha4, (alpha6): counter terms of the form mu^n.
 
-(3) sn, sn2, sn4: stochastic contributions to P_real(k), sigma^2, and the fourth moment kappa.
+(3) sn, sn2, (sn4): stochastic contributions to P_real(k), sigma^2, and the fourth moment kappa.
     [e.g. shot-noise, finger-of-god dispersion and kappa].
 
-For many purposes you can safely set alpha6 and sn4 to zero.
+Since in practice the velocity expansions for RSD saturate at the fourth moment, for many purposes you can safely set alpha6 and sn4 to zero and use a counterterm ansatz
+proportional to k^2 mu^4 P(k) to approximate the effects of velocities beyond sigma^2_12.
+In this case setting beyond_gauss = False requires only the reduced parameters
+
+pars = [b1, b2, bs, b3] +  [alpha0, alpha2, alpha4] +  [sn, sn2] (beyond_gauss=False)
+
 
 If you additionally want access to the velocity statistics, then the
 full set of parameters is
@@ -71,10 +76,9 @@ where the parameters are:
 
 (3) sn, sv, s0, s4: the stochastic contributions to the velocities
 
-Since the expansion for realistic samples is saturated at the third moment, for most
-practical purposes one can set beyond_gauss = False, in which case the code only uses
-up to sigma(k), and uses a counterterm ansatz for the third and fourth moments. In this
-case the parameters alpha_g1, alpha_g3, alpha_k2, and s4 are not used.
+Again, for mostpractical purposes one can set beyond_gauss = False, in which case 
+the code only uses up to sigma(k), and uses a counterterm ansatz for the third and 
+fourth moments. In this case the parameters alpha_g1, alpha_g3, alpha_k2, and s4 are not used.
 
 More details can be found in Chen, Vlah & White (2020).
 
