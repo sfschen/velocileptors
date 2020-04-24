@@ -35,21 +35,26 @@ which itself inherits the real-space power spectrum module cleft_fftw.py.
 
 
 For the most common case of computing the redshift-space power spectrum
-one can use a a _reduced set_ of parameters:
+one can use a a _reduced set_ of parameters and beyond_gauss=False:
 
-pars = [b1,b2,bs,b3] +  [alpha0,alpha2,alpha4,alpha6] +  [sn,sn2,sn4]
+pars = [b1,b2,bs,b3] +  [alpha0,alpha2,alpha4] +  [sn,sn2]
 
 where
 
 (1) b1, b2, bs, b3:  the bias parameters up to cubic order
 
-(2) alpha0,alpha2,alpha4,alpha6: counter terms of the form mu^n.
+(2) alpha0,alpha2,alpha4: counter terms of the form mu^n.
 
-(3) sn, sn2, sn4: stochastic contributions to P_real(k), sigma^2
-    [e.g. shot-noise and finger-of-god dispersion] and the fourth moment.
+(3) sn, sn2: stochastic contributions to P_real(k) and sigma^2
+    [e.g. shot-noise and finger-of-god dispersion].
 
-For many purposes you can set alpha6 and sn4 to zero.
+---
 
+If you want to go beyond the Gaussian approximation then you need to
+additionally specify an alpha6 counterterm parameter and an sn4
+stochastic term.
+
+---
 
 If you additionally want access to the velocity statistics, then the
 full set of parameters is
@@ -74,8 +79,7 @@ to zero.
 
 More details can be found in Chen, Vlah & White (2020).
 
-
-
+---
 
 This code is related to the configuration-space based code https://github.com/martinjameswhite/CLEFT_GSM.
 
