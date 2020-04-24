@@ -65,6 +65,13 @@ for each velocity component
 
 (3) sn, sv, s0: the stochastic contributions to the velocities
 
+Since the expansion for realistic samples is saturated at the third moment,
+for most practical purposes one can set beyond_gauss = False, in which
+case the code only uses up to sigma(k), and uses a counterterm ansatz
+for the third and fourth moments. In this case the parameters
+alpha_g1, alpha_g3, alpha_k2, and s4 are not used and can safely be set
+to zero.
+
 More details can be found in Chen, Vlah & White (2020).
 
 
