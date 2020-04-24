@@ -49,12 +49,14 @@ if __name__=="__main__":
     # compute_redshift_space_power_at_mu.  Here we'll do mu=0.5:
     mu     = 0.5
     kw,pkw = mome.compute_redshift_space_power_at_mu(pars,f,mu,reduced=True)
-    print("First few k bins for mu=",mu)
+    print("# First few k bins for mu=",mu)
+    print("# {:>10s} {:>12s}".format("k","P(k,mu)"))
     for k,p in zip(kw[:10],pkw[:10]):
         print("{:12.4e} {:12.4e}".format(k,p))
     #
     # Compute the multipoles.
     kl,p0,p2,p4 = mome.compute_redshift_space_power_multipoles(pars,f,reduced=True)
-    print("\n\nFirst few k bins for multipoles")
+    print("#\n#\n# First few k bins for multipoles")
+    print("# {:>10s} {:>12s} {:>12s} {:>12s}".format("k","P0","P2","P4"))
     for k,mono,quad,hexa in zip(kl[:10],p0[:10],p2[:10],p4[:10]):
         print("{:12.4e} {:12.4e} {:12.4e} {:12.4e}".format(k,mono,quad,hexa))
