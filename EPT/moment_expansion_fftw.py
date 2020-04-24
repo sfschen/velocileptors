@@ -143,7 +143,7 @@ class MomentExpansion:
         
         return kv, ret
         
-    def compute_redshift_space_power_multipoles(self, bvec, f, counterterm_c3=0, ngauss=4, reduced=False):
+    def compute_redshift_space_power_multipoles(self, bvec, f, counterterm_c3=0, ngauss=4, reduced=False,beyond_gauss=False):
 
         # Generate the sampling
         nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
@@ -156,7 +156,7 @@ class MomentExpansion:
         self.pknutable = np.zeros((len(nus),self.nk))
         
         for ii, nu in enumerate(nus_calc):
-            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(bvec,f,nu,reduced=reduced,counterterm_c3=counterterm_c3)[1]
+            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(bvec,f,nu,beyond_gauss=beyond_gauss,reduced=reduced,counterterm_c3=counterterm_c3)[1]
                 
         self.pknutable[ngauss:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
         

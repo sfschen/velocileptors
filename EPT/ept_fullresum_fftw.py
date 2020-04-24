@@ -4,7 +4,7 @@ from Utils.loginterp import loginterp
 
 from EPT.ept_fftw import EPT
 
-class RVEPT:
+class REPT:
 
     '''
     Class to compute IR-resummed RSD power spectrumusing the moment expansion appraoch in EPT.
@@ -119,14 +119,14 @@ class RVEPT:
         
         # Now add them all together!
         # no wiggle
-        ret += pk_nw - f*kv*nu2*vk_nw - 0.5*f**2*kv**2*nu2 * (s0_nw + 0.5*s2_nw*(3*nu2-1) ) + \
-              + 1./6 * f**3 * (kv*nu)**3 * (g1_nw * nu + g3_nw * nu**3)\
-              + 1./24 * f**4 * (kv*nu)**4 * (k0_nw + k2_nw * nu2 + k4_nw * nu2**2)
+        ret += pk_nw - f*kv*mu**2*vk_nw - 0.5*f**2*kv**2*mu**2 * (s0_nw + 0.5*s2_nw*(3*mu**2-1) ) + \
+              + 1./6 * f**3 * (kv*mu)**3 * (g1_nw * mu + g3_nw * mu**3)\
+              + 1./24 * f**4 * (kv*mu)**4 * (k0_nw + k2_nw * mu**2 + k4_nw * mu**4)
               
         # wiggle
-        ret += damp_fac * (pk_w - f*kv*nu2*vk_w - 0.5*f**2*kv**2*nu2 * (s0_w + 0.5*s2_w*(3*nu2-1) ) + \
-        + 1./6 * f**3 * (kv*nu)**3 * (g1_w * nu + g3_w * nu**3)\
-        + 1./24 * f**4 * (kv*nu)**4 * (k0_w + k2_w * nu2 + k4_w * nu2**2) )
+        ret += damp_fac * (pk_w - f*kv*mu**2*vk_w - 0.5*f**2*kv**2*mu**2 * (s0_w + 0.5*s2_w*(3*mu**2-1) ) + \
+        + 1./6 * f**3 * (kv*mu)**3 * (g1_w * mu + g3_w * mu**3)\
+        + 1./24 * f**4 * (kv*mu)**4 * (k0_w + k2_w * mu**2 + k4_w * mu**4) )
         
         # linear theory compensation
         ret -= damp_exp * damp_fac * (b1 + f*mu**2)**2 * self.plin_w
@@ -136,3 +136,28 @@ class RVEPT:
         ret += (sn + kv**2 * mu**2 * sn2 + kv**4 * mu**4 * sn4)
         
         return kv, ret
+        
+
+
+    def compute_redshift_space_power_multipoles(self, bvec, f, ngauss=4):
+
+        # Generate the sampling
+        nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
+        nus_calc = nus[0:ngauss]
+        
+        L0 = np.polynomial.legendre.Legendre((1))(nus)
+        L2 = np.polynomial.legendre.Legendre((0,0,1))(nus)
+        L4 = np.polynomial.legendre.Legendre((0,0,0,0,1))(nus)
+        
+        self.pknutable = np.zeros((len(nus),self.nk))
+        
+        for ii, nu in enumerate(nus_calc):
+            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(bvec,f,nu)[1]
+                
+        self.pknutable[ngauss:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
+        
+        self.p0ktable = 0.5 * np.sum((ws*L0)[:,None]*self.pknutable,axis=0)
+        self.p2ktable = 2.5 * np.sum((ws*L2)[:,None]*self.pknutable,axis=0)
+        self.p4ktable = 4.5 * np.sum((ws*L4)[:,None]*self.pknutable,axis=0)
+        
+        return self.kv, self.p0ktable, self.p2ktable, self.p4ktable
