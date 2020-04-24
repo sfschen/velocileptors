@@ -53,8 +53,9 @@ where
 (2) alpha0, alpha2, alpha4, alpha6: counter terms of the form mu^n.
 
 (3) sn, sn2, sn4: stochastic contributions to P_real(k), sigma^2, and the fourth moment kappa.
-    [e.g. shot-noise and finger-of-god dispersion].
+    [e.g. shot-noise, finger-of-god dispersion and kappa].
 
+For many purposes you can safely set alpha6 and sn4 to zero.
 
 If you additionally want access to the velocity statistics, then the
 full set of parameters is
