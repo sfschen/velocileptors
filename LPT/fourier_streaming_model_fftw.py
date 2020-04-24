@@ -40,14 +40,14 @@ class FourierStreamingModel(VelocityMoments):
 
     
     
-    def compute_cumulants(self, bvec):
+    def compute_cumulants(self, pars):
         '''
         Calculate velocity moments and turn into cumulants.
-        The bvec format is [b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, sn, sv, sigma0_stoch]
+        The pars format is [b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, sn, sv, sigma0_stoch]
         
         '''
         # Compute each moment
-        b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, sn, sv, sigma0_stoch = bvec
+        b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, sn, sv, sigma0_stoch = pars
         
         kv, pk = self.combine_bias_terms_pk(b1,b2,bs,b3,alpha,sn)
         kv, vk = self.combine_bias_terms_vk(b1,b2,bs,b3,alpha_v,sv)
@@ -64,9 +64,9 @@ class FourierStreamingModel(VelocityMoments):
         self.c2_0 = self.weight * (s0 - 0.5*s2)/self.one_plus_delta
         self.c2_2 = self.weight * (1.5*s2)/self.one_plus_delta + self.im_c1**2
 
-    def compute_redshift_space_power_at_mu(self, bvec, f, mu, counterterm_c3=0):
+    def compute_redshift_space_power_at_mu(self, pars, f, mu, counterterm_c3=0):
 
-        self.compute_cumulants(bvec)
+        self.compute_cumulants(pars)
         
         mu2 = mu**2
         expon = -f * self.kv * mu2 * self.im_c1 - 0.5 * f**2 * self.kv**2 * mu2 * (self.c2_0 + self.c2_2*mu2)
@@ -75,7 +75,7 @@ class FourierStreamingModel(VelocityMoments):
         return self.kv, (self.one_plus_delta * np.exp(expon) - 1.)/self.weight
 
 
-    def compute_redshift_space_power_multipoles(self, bvec, f, counterterm_c3=0, ngauss=4):
+    def compute_redshift_space_power_multipoles(self, pars, f, counterterm_c3=0, ngauss=4):
 
         # Generate the sampling
         mus, ws = np.polynomial.legendre.leggauss(2*ngauss)
@@ -88,7 +88,7 @@ class FourierStreamingModel(VelocityMoments):
         self.pkmutable = np.zeros((len(mus),self.nk))
         
         for ii, mu in enumerate(mus_calc):
-            self.pkmutable[ii,:] = self.compute_redshift_space_power_at_mu(bvec,f,mu,counterterm_c3=counterterm_c3)[1]
+            self.pkmutable[ii,:] = self.compute_redshift_space_power_at_mu(pars,f,mu,counterterm_c3=counterterm_c3)[1]
 
                 
         self.pkmutable[ngauss:,:] = np.flip(self.pkmutable[0:ngauss],axis=0)

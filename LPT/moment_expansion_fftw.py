@@ -56,7 +56,7 @@ class MomentExpansion(VelocityMoments):
             self.convert_kappa_bases()
         
 
-    def compute_redshift_space_power_at_mu(self,bvec,f,mu,counterterm_c3=0,reduced=False):
+    def compute_redshift_space_power_at_mu(self,pars,f,mu,counterterm_c3=0,reduced=False):
         '''
         Moment expansion approach.
         
@@ -67,7 +67,7 @@ class MomentExpansion(VelocityMoments):
         mu2 = mu**2
         if self.beyond_gauss:
             if reduced:
-                b1, b2, bs, b3, alpha0, alpha2, alpha4, alpha6, sn, sn2, sn4 = bvec
+                b1, b2, bs, b3, alpha0, alpha2, alpha4, alpha6, sn, sn2, sn4 = pars
                 
                 kv, pk = self.combine_bias_terms_pk(b1,b2,bs,b3,alpha0,sn)
                 kv, vk = self.combine_bias_terms_vk(b1,b2,bs,b3,alpha2,sn2)
@@ -76,7 +76,7 @@ class MomentExpansion(VelocityMoments):
                 kv, k0, k2, k4 = self.combine_bias_terms_kk(0,sn4)
                 
             else:
-                b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, alpha_g1, alpha_g3, alpha_k2, sn, sv, sigma0_stoch, sn4= bvec
+                b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, alpha_g1, alpha_g3, alpha_k2, sn, sv, sigma0_stoch, sn4= pars
                 
                 kv, pk = self.combine_bias_terms_pk(b1,b2,bs,b3,alpha,sn)
                 kv, vk = self.combine_bias_terms_vk(b1,b2,bs,b3,alpha_v,sv)
@@ -91,7 +91,7 @@ class MomentExpansion(VelocityMoments):
                   
         else:
             if reduced:
-                b1, b2, bs, b3, alpha0, alpha2, alpha4, sn, sn2 = bvec
+                b1, b2, bs, b3, alpha0, alpha2, alpha4, sn, sn2 = pars
                 bv = [b1, b2, bs, b3, alpha0, alpha2, 0, 0, sn, 0, sn2 ]
                 ct3 = alpha4
                 
@@ -100,7 +100,7 @@ class MomentExpansion(VelocityMoments):
                 kv, s0, s2 = self.combine_bias_terms_sk(b1,b2,bs,b3,0,0,0,basis='Polynomial')
                 
             else:
-                b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, sn, sv, sigma0_stoch = bvec
+                b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, sn, sv, sigma0_stoch = pars
                 ct3 = counterterm_c3
                 
                 kv, pk = self.combine_bias_terms_pk(b1,b2,bs,b3,alpha,sn)
@@ -116,7 +116,7 @@ class MomentExpansion(VelocityMoments):
         return self.kv, ret
 
 
-    def compute_redshift_space_power_multipoles(self, bvec, f, counterterm_c3=0, ngauss=4, reduced=False):
+    def compute_redshift_space_power_multipoles(self, pars, f, counterterm_c3=0, ngauss=4, reduced=False):
 
         # Generate the sampling
         nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
@@ -129,7 +129,7 @@ class MomentExpansion(VelocityMoments):
         self.pknutable = np.zeros((len(nus),self.nk))
         
         for ii, nu in enumerate(nus_calc):
-            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(bvec,f,nu,reduced=reduced,counterterm_c3=counterterm_c3)[1]
+            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(pars,f,nu,reduced=reduced,counterterm_c3=counterterm_c3)[1]
                 
         self.pknutable[ngauss:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
         

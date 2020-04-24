@@ -115,22 +115,22 @@ class MomentExpansion:
     # In this case the parameters alpha_g1, alpha_g3, alpha_k2, stoch_k0 are not used--set to zero if desired.
     # Otherwise gives the full moment expansion expression up to one-loop order.
     
-    def compute_redshift_space_power_at_mu(self,bvec,f,mu, counterterm_c3 = 0, beyond_gauss=False, reduced=True):
+    def compute_redshift_space_power_at_mu(self,pars,f,mu, counterterm_c3 = 0, beyond_gauss=False, reduced=True):
         
         if beyond_gauss:
             if reduced:
-                b1, b2, bs, b3, alpha0, alpha2, alpha4, alpha6, sn, sn2, sn4 = bvec
+                b1, b2, bs, b3, alpha0, alpha2, alpha4, alpha6, sn, sn2, sn4 = pars
                 alpha, alphav, alpha_s0, alpha_s2, alpha_g1, alpha_g3, alpha_k2 = alpha0, alpha2, 0, alpha4, 0, 0, alpha6
                 sn, sv, sigma0, stoch_k0 = sn, sn2, 0, sn4
             else:
-                b1,b2,bs,b3,alpha,alphav,alpha_s0,alpha_s2,alpha_g1,alpha_g3,alpha_k2,sn,sv,sigma0,stoch_k0 = bvec
+                b1,b2,bs,b3,alpha,alphav,alpha_s0,alpha_s2,alpha_g1,alpha_g3,alpha_k2,sn,sv,sigma0,stoch_k0 = pars
         else:
             if reduced:
-                b1, b2, bs, b3, alpha0, alpha2, alpha4, sn, sn2 = bvec
+                b1, b2, bs, b3, alpha0, alpha2, alpha4, sn, sn2 = pars
                 alpha, alphav, alpha_s0, alpha_s2 = alpha0, alpha2, 0, alpha4
                 sn, sv, sigma0 = sn, sn2, 0
             else:
-                b1,b2,bs,b3,alpha,alphav,alpha_s0,alpha_s2,sn,sv,sigma0 = bvec
+                b1,b2,bs,b3,alpha,alphav,alpha_s0,alpha_s2,sn,sv,sigma0 = pars
         
         kv = self.pktable[:,0]
         mu2 = mu**2
@@ -151,7 +151,7 @@ class MomentExpansion:
         
         return kv, ret
         
-    def compute_redshift_space_power_multipoles(self, bvec, f, counterterm_c3=0, ngauss=4, reduced=False,beyond_gauss=False):
+    def compute_redshift_space_power_multipoles(self, pars, f, counterterm_c3=0, ngauss=4, reduced=False,beyond_gauss=False):
 
         # Generate the sampling
         nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
@@ -164,7 +164,7 @@ class MomentExpansion:
         self.pknutable = np.zeros((len(nus),self.nk))
         
         for ii, nu in enumerate(nus_calc):
-            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(bvec,f,nu,beyond_gauss=beyond_gauss,reduced=reduced,counterterm_c3=counterterm_c3)[1]
+            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(pars,f,nu,beyond_gauss=beyond_gauss,reduced=reduced,counterterm_c3=counterterm_c3)[1]
                 
         self.pknutable[ngauss:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
         

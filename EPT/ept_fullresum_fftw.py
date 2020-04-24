@@ -139,7 +139,7 @@ class REPT:
         
 
 
-    def compute_redshift_space_power_multipoles(self, bvec, f, ngauss=4):
+    def compute_redshift_space_power_multipoles(self, pars, f, ngauss=4):
 
         # Generate the sampling
         nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
@@ -152,7 +152,7 @@ class REPT:
         self.pknutable = np.zeros((len(nus),self.nk))
         
         for ii, nu in enumerate(nus_calc):
-            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(bvec,f,nu)[1]
+            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(pars,f,nu)[1]
                 
         self.pknutable[ngauss:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
         

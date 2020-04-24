@@ -110,7 +110,6 @@ class GaussianStreamingModel(VelocityMoments):
     def compute_cumulants(self, b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2):
         '''
         Calculate velocity moments and turn into cumulants.
-        The bvec format is [b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2]
         '''
         # Compute each moment
         self.xieft = self.ximatter + b1*self.xitable[:,1] + b1**2*self.xitable[:,2]\
