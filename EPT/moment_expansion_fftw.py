@@ -117,12 +117,20 @@ class MomentExpansion:
     
     def compute_redshift_space_power_at_mu(self,bvec,f,mu, counterterm_c3 = 0, beyond_gauss=False, reduced=True):
         
-        if reduced:
-            b1, b2, bs, b3, alpha0, alpha2, alpha4, alpha6, sn, sn2, sn4 = bvec
-            alpha, alphav, alpha_s0, alpha_s2, alpha_g1, alpha_g3, alpha_k2 = alpha0, alpha2, 0, alpha4, 0, 0, alpha6
-            sn, sv, sigma0, stoch_k0 = sn, sn2, 0, sn4
+        if beyond_gauss:
+            if reduced:
+                b1, b2, bs, b3, alpha0, alpha2, alpha4, alpha6, sn, sn2, sn4 = bvec
+                alpha, alphav, alpha_s0, alpha_s2, alpha_g1, alpha_g3, alpha_k2 = alpha0, alpha2, 0, alpha4, 0, 0, alpha6
+                sn, sv, sigma0, stoch_k0 = sn, sn2, 0, sn4
+            else:
+                b1,b2,bs,b3,alpha,alphav,alpha_s0,alpha_s2,alpha_g1,alpha_g3,alpha_k2,sn,sv,sigma0,stoch_k0 = bvec
         else:
-            b1,b2,bs,b3,alpha,alphav,alpha_s0,alpha_s2,alpha_g1,alpha_g3,alpha_k2,sn,sv,sigma0,stoch_k0 = bvec
+            if reduced:
+                b1, b2, bs, b3, alpha0, alpha2, alpha4, sn, sn2 = bvec
+                alpha, alphav, alpha_s0, alpha_s2 = alpha0, alpha2, 0, alpha4
+                sn, sv, sigma0 = sn, sn2, 0
+            else:
+                b1,b2,bs,b3,alpha,alphav,alpha_s0,alpha_s2,sn,sv,sigma0 = bvec
         
         kv = self.pktable[:,0]
         mu2 = mu**2

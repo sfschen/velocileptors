@@ -41,8 +41,8 @@ if __name__=="__main__":
     #    sn,s0: stochastic contributions to P(k) and sigma^2.
     z,f    = 0.80,0.8076
     biases = [0.70,0.5,-0.3,0.0]
-    cterms = [10.0,20.,-60.,0.0]
-    stoch  = [1800.,-1000., 0.0]
+    cterms = [10.0,20.,-60.]
+    stoch  = [1800.,-1000.]
     pars   = biases + cterms + stoch
     # Compute the wedges, here we'll just to a single mu.  Note if we
     # just wanted the real-space power spectrum we could pass mu=0 to
