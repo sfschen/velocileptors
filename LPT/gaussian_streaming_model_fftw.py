@@ -183,7 +183,7 @@ class GaussianStreamingModel(VelocityMoments):
         return xi0, xi2, xi4
 
 
-    def compute_xi_real(self, s,  b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2, rwidth=100, Nint=10000):
+    def compute_xi_real(self, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2,s2fog, rwidth=100, Nint=10000):
         '''
         Compute the real-space correlation function.
         '''
