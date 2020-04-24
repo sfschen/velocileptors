@@ -36,32 +36,32 @@ kl,p0,p2,p4 = mome.compute_redshift_space_power_multipoles(pars,f,reduced=True)
 ```
 
 
-The core rsd modules are distributed into two directories, one for the LPT theory and
-one for the EPT theory (plus supporting routines in the Utils directory). Running the EPT
-version of the above simply requires substituting the "LPT" for "EPT" in the import
-statement.
+The core rsd modules are distributed into two directories, one for
+the LPT theory and one for the EPT theory (plus supporting routines
+in the Utils directory). Running the EPT version of the above simply
+requires substituting the "LPT" for "EPT" in the import statement.
 See the READMEs in those directories for more information.
 
 For the most common case of computing the redshift-space power spectrum
-one can use a a _reduced set_ of parameters:
+one can use a a _reduced set_ of parameters and beyond_gauss=False:
 
-pars = [b1, b2, bs, b3] +  [alpha0, alpha2, alpha4, alpha6] +  [sn, sn2, sn4]
+pars = [b1, b2, bs, b3] +  [alpha0, alpha2, alpha4] +  [sn, sn2]
 
 where
 
 (1) b1, b2, bs, b3:  the bias parameters up to cubic order
 
-(2) alpha0, alpha2, alpha4, (alpha6): counter terms of the form mu^n.
+(2) alpha0, alpha2, alpha4: counter terms of the form mu^n.
 
-(3) sn, sn2, (sn4): stochastic contributions to P_real(k), sigma^2, and the fourth moment kappa.
+(3) sn, sn2: stochastic contributions to P_real(k), sigma^2
     [e.g. shot-noise, finger-of-god dispersion and kappa].
 
-Since in practice the velocity expansions for RSD saturate at the fourth moment, for many purposes you can safely set alpha6 and sn4 to zero and use a counterterm ansatz
-proportional to k^2 mu^4 P(k) to approximate the effects of velocities beyond sigma^2_12.
-In this case setting beyond_gauss = False requires only the reduced parameters
 
-pars = [b1, b2, bs, b3] +  [alpha0, alpha2, alpha4] +  [sn, sn2] (beyond_gauss=False)
+To include higher order terms in the moment expansion set beyond_gauss=True.
+In this case you need to additionally specify an alpha6 counterterm and
+an sn4 stochastic term.
 
+-------
 
 If you additionally want access to the velocity statistics, then the
 full set of parameters is
