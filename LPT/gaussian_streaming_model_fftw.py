@@ -195,4 +195,4 @@ class GaussianStreamingModel(VelocityMoments):
         + b2*bs*self.xitable[:,8]\
         + bs**2*self.xitable[:,9] + b3*self.xitable[:,10]\
         + b1*b3*self.xitable[:,11] + alpha*self.xict
-        return(xieft)
+        return( (self.rint,xieft) )
