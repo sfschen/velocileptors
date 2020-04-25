@@ -18,4 +18,16 @@ compute_redshift_space_multipoles. The velocity moments are accesible using the 
 2. ept_fullresum_fftw.py: this directly computes the IR-resummed one loop EPT power
 spectrum without going through the velocities.
 
+The basic call is:
+```
+from moment_expansion_fftw import MomentExpansion
+
+mome        = MomentExpansion(klin,pklin, pnw=pnw, threads=nthreads)
+kw,pkw      = mome.compute_redshift_space_power_at_mu(pars,f,mu,reduced=True)
+kl,p0,p2,p4 = mome.compute_redshift_space_power_multipoles(pars,f,reduced=True)
+```
+If no no-wiggle spectrum is given, the code will calculate one on-the-fly using a Savitsky-Golay filter,
+but we have found that calculations are more robust when using no-wiggle spectra that have been calculated
+with some cosmology-dependence smoothed out (e.g. Eisenstein and Hu), which we leave to the user.
+
 Examples are given in the main directory under "EPT Examples.ipynb."
