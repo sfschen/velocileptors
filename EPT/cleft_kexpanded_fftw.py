@@ -9,11 +9,10 @@ from Utils.qfuncfft import QFuncFFT
 
 class KECLEFT:
     '''
-    Class to calculate power spectra up to one loop.
+    Class to calculate power spectra up to one loop in "expanded LPT,"
+    i.e. wherein the long displacement A_{ij} are expanded but the bias basis is Lagrangian.
     
-    Based on Chirag's code, but using my own FFTLog code for faster evaluation. Now with FFTW!
-    
-    This is like CLEFT, but with exponent "E"xponentiated.
+    This is like CLEFT, but with exponent "E"xpanded.
     
     All bias tables are formatted as 1, b1, b1^2, b2, b1b2, b2^2, bs, b1bs, b2bs, bs^2, b3, b1b3 (ncol = 12).
     
@@ -102,6 +101,12 @@ class KECLEFT:
             self.Ub3 = self.qf.Ub3
             self.theta = self.qf.theta
 
+    # The various contributions to P(k) are organized into
+    # (1) Linear Theory
+    # (2) Connected: this comes from terms that come from connected LPT cumulants that can be Fourier-transformed directly
+    # (3) p_k#: this comes from disconnected contributions proportional to k^#
+    # Once separated these Hankel transform individually at once for all k.
+
     def compute_p_linear(self):
         self.p_linear = np.zeros( (self.num_power_components, self.N) )
         self.p_linear[0,:] = self.pint
@@ -167,8 +172,6 @@ class KECLEFT:
             # do FFTLog
             ktemps, bias_ffts = self.sph.sph(l, bias_integrands)
             self.p_k1 += 4 * np.pi * interp1d(ktemps, bias_ffts, bounds_error=False)(self.kint)
-            #self.p_k4 = np.interp(self.kint, ktemps, bias_ffts)
-            #print(l, ret[0])
             
             
     def compute_p_k2(self):
@@ -260,32 +263,6 @@ class KECLEFT:
                                        self.p_linear[ii,:] + self.p_connected[ii,:] \
                                        + self.p_k0[ii,:] + self.kint * self.p_k1[ii,:] + self.kint**2 * self.p_k2[ii,:]\
                                        + self.kint**3 * self.p_k3[ii,:] + self.kint**4 * self.p_k4[ii,:])(kv)
-
-    def combine_bias_terms_pk(self, bvec):
-        '''
-        Combine all the bias terms into one power spectrum. Currently assuming all counterterms/derivative biases are absorbed into one term.
-        So bvec = [b1, b2, bs, alpha, alpha_v, alpha_s0 ,alpha_s2, sn, sv, s0], where the three zeros are counterterms for the velocity statistics
-        
-        '''
-        arr = self.pktable
-        
-        if self.third_order:
-            b1, b2, bs, b3, alpha, alpha_v, alpha_s, alpha_s2, sn, sv, s0 = bvec # only alpha and sn are relevant here
-            bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2, bs, b1*bs, b2*bs, bs**2, b3, b1*b3])
-        elif self.shear:
-            b1, b2, bs, alpha, alpha_v, alpha_s, alpha_s2, sn, sv, s0 = bvec # only alpha and sn are relevant here
-            bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2, bs, b1*bs, b2*bs, bs**2])
-        else:
-            b1, b2, alpha, alpha_v, alpha_s, alpha_s2, sn, sv, s0 = bvec # only alpha and sn are relevant here
-            bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2])
-            
-
-        kv = arr[:,0]; plin = np.interp(kv, self.k, self.p)
-        pktemp = np.copy(arr)[:,1:-1]
-
-        res = np.sum(pktemp * bias_monomials, axis =1) + alpha*kv**2 * plin + sn
-
-        return kv, res
 
 
     def export_wisdom(self, wisdom_file='./wisdom.npy'):

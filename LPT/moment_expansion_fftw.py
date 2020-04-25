@@ -26,7 +26,7 @@ class MomentExpansion(VelocityMoments):
     We leave this up to the user.
     '''
 
-    def __init__(self, *args, kmin = 1e-3, kmax = 3, nk = 100, **kw):
+    def __init__(self, *args, kmin = 5e-3, kmax = 0.3, nk = 50, **kw):
         '''
         Same keywords and arguments as the other two classes for now.
         '''

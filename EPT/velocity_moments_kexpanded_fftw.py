@@ -10,7 +10,9 @@ from EPT.cleft_kexpanded_fftw import KECLEFT
 
 class KEVelocityMoments(KECLEFT):
     '''
-    Class based on cleft_fftw to compute pairwise velocity moments, in expanded LPT.
+    Class based on cleft_kexpanded_fftw to compute pairwise velocity moments, in expanded LPT.
+    
+    Structured in the same way as the inherited class but with functions for velocity moments.
     
     '''
 
@@ -764,79 +766,5 @@ class KEVelocityMoments(KECLEFT):
         self.k0 = 3./8 * (self.kappaktable[:,1] - 2*self.kappaktable[:,2] + self.kappaktable[:,3])
         self.k2 = 3./4 * (-self.kappaktable[:,1] + 6*self.kappaktable[:,2] - 5*self.kappaktable[:,3])
         self.k4 = 1./8 * (3*self.kappaktable[:,1] - 30*self.kappaktable[:,2] + 35*self.kappaktable[:,3])
-
-
-    # the following functions combine all the components into the spectra given some set
-    # of bias parameters shared between P(k), v(k), sigma(k)
-    # these are, in order, b1, b2, bs, alpha, alpha_v, alpha_s, alpha_s2, sn, sv, s0.
-
-    def combine_bias_terms_vk(self, bvec):
-        '''
-            Combine all the bias terms into one velocity spectrum.
-            Assumes the P(k) table has already been computed.
-            
-            '''
-        arr = self.vktable
-        
-        if self.third_order:
-            b1, b2, bs, b3, alpha, alpha_v, alpha_s, alpha_s2, sn, sv, s0 = bvec # only alpha and sn are relevant here
-            bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2, bs, b1*bs, b2*bs, bs**2, b3, b1*b3])
-        elif self.shear:
-            b1, b2, bs, alpha, alpha_v, alpha_s, alpha_s2, sn, sv, s0 = bvec # only alpha and sn are relevant here
-            bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2, bs, b1*bs, b2*bs, bs**2])
-        else:
-            b1, b2, alpha, alpha_v, alpha_s, alpha_s2, sn, sv, s0 = bvec # only alpha and sn are relevant here
-            bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2])
-        
-        try:
-            kv = arr[:,0]; za = self.pktable[:,-1]
-        except:
-            print("Compute the power spectrum table first!")
-            
-        pktemp = np.copy(arr)[:,1:]
-        
-        res = np.sum(pktemp * bias_monomials, axis =1) + alpha_v*kv * za + sv*kv
-        
-        return kv, res
-
-    def combine_bias_terms_sk(self, bvec, basis='Legendre'):
-        '''
-            Combine all the bias terms into one velocity spectrum.
-            Assumes the P(k) table has already been computed.
-            '''
-        
-        self.convert_sigma_bases(basis=basis)
-        
-        if self.third_order:
-            b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, sn, sv, s0 = bvec # only alpha and sn are relevant here
-            bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2, bs, b1*bs, b2*bs, bs**2, b3, b1*b3])
-        elif self.shear:
-            b1, b2, bs, alpha, alpha_v, alpha_s0, alpha_s2, sn, sv, s0 = bvec # only alpha and sn are relevant here
-            bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2, bs, b1*bs, b2*bs, bs**2])
-        else:
-            b1, b2, alpha, alpha_v, alpha_s0, alpha_s2, sn, sv, s0 = bvec # only alpha and sn are relevant here
-            bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2])
-        
-        # Do the constant coefficient
-        arr = self.s0
-        
-        try:
-            kv = arr[:,0]; za = self.pktable[:,-1]
-        except:
-            print("Compute the power spectrum table first!")
-            
-        pktemp = np.copy(arr)[:,1:]
-        
-        s0 = np.sum(pktemp * bias_monomials, axis =1) + alpha_s0 * za + s0# here the counterterm is a zero lag and just gives P_Zel
-        
-        # and the quadratic
-        arr = self.s2
-        
-        kv = arr[:,0]
-        pktemp = np.copy(arr)[:,1:]
-        
-        s2 = np.sum(pktemp * bias_monomials, axis =1) + alpha_s2 * za # there's now a counterterm here too!
-        
-        return kv, s0 ,s2
 
 

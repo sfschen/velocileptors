@@ -10,7 +10,10 @@ class MomentExpansion:
     '''
     Class to compute IR-resummed velocity moments and RSD using the moment expansion appraoch in EPT.
     
-    Based on the EPT class.
+    Based on the "kexpanded" classes, with the main new feature being that everything is calculated twice,
+    once for the usual linear power spectrum and once for a no-wiggle version that can be input.
+    
+    Contains functions to assemble spectra given bias parameters, counterterms etc.
     
     '''
     
@@ -81,6 +84,7 @@ class MomentExpansion:
         
     
     # The following classes combine the bias terms into velocity moments given some bias parameters
+    # See the expressions in Chen, Vlah and White (2020) for further details.
         
     def combine_bias_terms_pk(self,b1,b2,bs,b3,alpha,sn):
         

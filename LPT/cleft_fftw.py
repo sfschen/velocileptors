@@ -15,7 +15,7 @@ class CLEFT:
     Based on Chirag's code, but using my own FFTLog code for faster evaluation. Now with FFTW!
     '''
 
-    def __init__(self, k, p, one_loop=True, shear=True, third_order=False, cutoff=10, jn=10, N = 4000, threads=1, extrap_min = -6, extrap_max = 3, import_wisdom=False, wisdom_file='wisdom.npy'):
+    def __init__(self, k, p, one_loop=True, shear=True, third_order=False, cutoff=10, jn=5, N = 2000, threads=1, extrap_min = -5, extrap_max = 3, import_wisdom=False, wisdom_file='wisdom.npy'):
 
         
         self.N = N

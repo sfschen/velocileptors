@@ -42,8 +42,7 @@ class VelocityMoments(CLEFT):
             self.num_vel_components = 5; self.vii = np.array([0,1,2,3,4]) + 1
             self.num_spar_components = 4; self.sparii = np.array([0,1,2,3]) + 1
             self.num_strace_components = 4; self.straceii = np.array([0,1,2,3]) + 1
-                
-        # Need one extra component to do the matter za
+            
         self.sph_v = SphericalBesselTransform(self.qint, L=self.jn, ncol=(self.num_vel_components), threads=self.threads, import_wisdom= self.import_wisdom, wisdom_file = self.wisdom_file)
         self.sph_spar = SphericalBesselTransform(self.qint, L=self.jn, ncol=(self.num_spar_components), threads=self.threads, import_wisdom= self.import_wisdom, wisdom_file = self.wisdom_file)
         self.sph_strace = SphericalBesselTransform(self.qint, L=self.jn, ncol=(self.num_strace_components), threads=self.threads, import_wisdom= self.import_wisdom, wisdom_file = self.wisdom_file)
