@@ -39,7 +39,9 @@ kl,p0,p2,p4 = mome.compute_redshift_space_power_multipoles(pars,f,reduced=True)
 The core rsd modules are distributed into two directories, one for
 the LPT theory and one for the EPT theory (plus supporting routines
 in the Utils directory). Running the EPT version of the above simply
-requires substituting the "LPT" for "EPT" in the import statement.
+requires substituting the "LPT" for "EPT" in the import statement,
+though can be made more robust by supplying a cosmology-conscious 
+no-wiggle power spectrum via the keyword pnw.
 See the READMEs in those directories for more information.
 
 For the most common case of computing the redshift-space power spectrum
