@@ -15,7 +15,7 @@ class GaussianStreamingModel(VelocityMoments):
     Inherits the VelocityMoments class which itself inherits the CLEFT class.
     '''
 
-    def __init__(self, *args, kmin = 3e-4, kmax = 1, nk = 200, **kw):
+    def __init__(self, *args, kmin=1e-3, kmax=3, nk= 200, jn = 10, cutoff=20, **kw):
         '''
         Same keywords and arguments as the other two classes for now.
         '''
