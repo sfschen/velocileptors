@@ -14,6 +14,8 @@ class GaussianStreamingModel(VelocityMoments):
     using the Gaussian streaming model.
     
     Inherits the VelocityMoments class which itself inherits the CLEFT class.
+    
+    Note if third_order = False passing b_3 to the functions will simply produce no effect.
     '''
 
     def __init__(self, *args, kmin=1e-3, kmax=3, nk= 200, jn = 10, cutoff=20, **kw):
@@ -44,9 +46,9 @@ class GaussianStreamingModel(VelocityMoments):
     def setup_config_vels(self):
         # Fourier transform the velocity moments
         # the correlation function
-        self.xitable = np.zeros((len(self.rint),13))
+        self.xitable = np.zeros((len(self.rint),13)) # minus one because we deal with the ct separately
 
-        for ii in range(12):
+        for ii in range(self.num_power_components-1):
             _integrand = loginterp(self.pktable[:,0], self.pktable[:,1+ii])(self.kint)
             qs, xs = self.sph_gsm.sph(0,_integrand)
             self.xitable[:,ii] = np.interp(self.rint, qs, xs)
@@ -62,7 +64,7 @@ class GaussianStreamingModel(VelocityMoments):
         # the pairwise velocity
         self.vtable = np.zeros((len(self.rint),12))
 
-        for ii in range(12):
+        for ii in range(self.num_power_components-1):
             _integrand = loginterp(self.vktable[:,0], self.vktable[:,1+ii])(self.kint)
             qs, xs = self.sph_gsm.sph(1,_integrand)
             self.vtable[:,ii] = np.interp(self.rint, qs, xs)
@@ -78,7 +80,7 @@ class GaussianStreamingModel(VelocityMoments):
         # and finally the velocity dispersions
         self.s0table = np.zeros((len(self.rint),12))
         self.s2table = np.zeros((len(self.rint),12))
-        for ii in range(12):
+        for ii in range(self.num_power_components-1):
             _integrand = loginterp(self.s0[1:,0], self.s0[1:,1+ii])(self.kint)
             qs, xs = self.sph_gsm.sph(0,_integrand)
             self.s0table[:,ii] = np.interp(self.rint, qs, xs)
