@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.interpolate import InterpolatedUnivariateSpline as Spline
 
 from Utils.spherical_bessel_transform import SphericalBesselTransform
 from Utils.loginterp import loginterp
@@ -183,9 +184,9 @@ class GaussianStreamingModel(VelocityMoments):
         return xi0, xi2, xi4
 
 
-    def compute_xi_real(self, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2,s2fog, rwidth=100, Nint=10000):
+    def compute_xi_real(self, rr, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2,s2fog, rwidth=100, Nint=10000):
         '''
-        Compute the real-space correlation function.
+        Compute the real-space correlation function at rr.
         '''
         # This is just the zeroth moment:
         xieft = self.ximatter + b1*self.xitable[:,1] + b1**2*self.xitable[:,2]\
@@ -195,4 +196,5 @@ class GaussianStreamingModel(VelocityMoments):
         + b2*bs*self.xitable[:,8]\
         + bs**2*self.xitable[:,9] + b3*self.xitable[:,10]\
         + b1*b3*self.xitable[:,11] + alpha*self.xict
-        return( (self.rint,xieft) )
+        xir = Spline(self.rint,xieft)(rr)
+        return xir
