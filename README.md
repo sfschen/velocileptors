@@ -89,3 +89,12 @@ More details can be found in Chen, Vlah & White (2020).
 
 This code is related to the configuration-space based code
 https://github.com/martinjameswhite/CLEFT_GSM.
+
+---
+
+Much of the structure of this code is based on the earlier LPT code by Chirag Modi
+https://github.com/modichirag/CLEFT
+which used the the mcfit class
+https://github.com/eelregit/mcfit
+The main modification is that we save the Mellin transform kernels used in FFTLog to
+save time, since they take more time than the fft's themselves to evaluate.
