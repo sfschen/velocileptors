@@ -12,7 +12,7 @@ class KECLEFT:
     Class to calculate power spectra up to one loop in "expanded LPT,"
     i.e. wherein the long displacement A_{ij} are expanded but the bias basis is Lagrangian.
     
-    This is like CLEFT, but with exponent "E"xpanded.
+    This is like CLEFT, but with exponent "E"xpanded and separated into powers of k.
     
     All bias tables are formatted as 1, b1, b1^2, b2, b1b2, b2^2, bs, b1bs, b2bs, bs^2, b3, b1b3 (ncol = 12).
     

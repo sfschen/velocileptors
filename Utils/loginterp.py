@@ -5,8 +5,13 @@ import inspect
 
 def loginterp(x, y, yint = None, side = "both", lorder = 9, rorder = 9, lp = 1, rp = -1,
               ldx = 1e-6, rdx = 1e-6):
-    '''Extrapolate function by evaluating a log-index of left & right side
-        '''
+    '''
+    Extrapolate function by evaluating a log-index of left & right side.
+    
+    From Chirag Modi's CLEFT code at
+    https://github.com/modichirag/CLEFT/blob/master/qfuncpool.py
+    '''
+    
     if yint is None:
         yint = interpolate(x, y, k = 5)
     if side == "both":

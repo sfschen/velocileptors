@@ -18,7 +18,10 @@ class VelocityMoments(CLEFT):
 
     def __init__(self, *args, beyond_gauss = False, **kw):
         '''
-           Same keywords as the cleft_fftw class. Go look there!
+        If beyond_gauss = True computes the third and fourth moments, otherwise
+        default is to enable calculation of P(k), v(k) and sigma(k).
+        
+        Other keywords the same as the cleft_fftw class. Go look there!
         '''
         
         # Set up the configuration space quantities
@@ -349,7 +352,13 @@ class VelocityMoments(CLEFT):
     
     def kappa_integrals(self,k):
         '''
-        Since kappa_ijk only involes one term we can just do them all in one go.
+        Since kappa_ijkl only involes one term we can just do them all in one go.
+        
+        The contractions are
+        (1) \delta_{ij} \delta_{kl}
+        (2) \hk_i \hk_j \delta_{kl}
+        (3)\hk_i \hk_j \hk_k \hk_l
+        where \hk = \hat{k} is the unit vector of k.
         
         '''
         ksq = k**2; kf = k**4
@@ -501,9 +510,8 @@ class VelocityMoments(CLEFT):
     
     def convert_kappa_bases(self, basis='Polynomial'):
         '''
-            Translates the contraction of gamma into the polynomial basis
-            given by kappa = kappa0 / 3 * (delta_ij delta_kl + perms) + kappa2 / 6 * (k_i k_j delta_kl + perms)
-                               + kappa4 * k_i k_j k_k k_l
+        Translates the contraction of gamma into the polynomial basis
+        given by kappa = kappa0 / 3 * (delta_ij delta_kl + perms) + kappa2 / 6 * (k_i k_j delta_kl + perms) + kappa4 * k_i k_j k_k k_l.
         '''
         
         if self.kappaktable is None:
@@ -523,10 +531,12 @@ class VelocityMoments(CLEFT):
 
     def combine_bias_terms_vk(self, b1, b2, bs, b3, alpha_v, sv):
         '''
-            Combine all the bias terms into one velocity spectrum.
-            Assumes the P(k) table has already been computed.
+        Combine all the bias terms into one velocity spectrum.
+        Assumes the P(k) table has already been computed.
             
-            '''
+        alpha_v, sv = counterterm and stochastic term.
+            
+        '''
         arr = self.vktable
         
         if self.third_order:
@@ -549,8 +559,10 @@ class VelocityMoments(CLEFT):
 
     def combine_bias_terms_sk(self, b1, b2, bs, b3, alpha_s0, alpha_s2, s0_stoch, basis='Polynomial'):
         '''
-            Combine all the bias terms into one velocity spectrum.
-            Assumes the P(k) table has already been computed.
+        Combine all the bias terms into one velocity dispersion spectrum.
+        Assumes the P(k) table has already been computed.
+        
+        alpha_s0, alpha_s2 = counterterm for s0 and s2, s0_stoch = stochastic term for s0.
         '''
         
         self.convert_sigma_bases(basis=basis)

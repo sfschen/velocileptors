@@ -18,7 +18,7 @@ class KEVelocityMoments(KECLEFT):
 
     def __init__(self, *args, beyond_gauss = True, **kw):
         '''
-           Same keywords as the cleft_fftw class. Go look there!
+        Same keywords as the cleft_kexpanded_fftw class. Go look there!
         '''
         
         # Set up the configuration space quantities
@@ -753,9 +753,11 @@ class KEVelocityMoments(KECLEFT):
     
     def convert_kappa_bases(self, basis='Polynomial'):
         '''
-            Translates the contraction of gamma into the polynomial basis
-            given by kappa = kappa0 / 3 * (delta_ij delta_kl + perms) + kappa2 / 6 * (k_i k_j delta_kl + perms)
-                               + kappa4 * k_i k_j k_k k_l
+        Translates the contraction of gamma into the polynomial basis
+        given by
+        kappa = kappa0 / 3 * (delta_ij delta_kl + perms)
+                + kappa2 / 6 * (k_i k_j delta_kl + perms)
+                + kappa4 * k_i k_j k_k k_l
         '''
         
         if self.kappaktable is None:

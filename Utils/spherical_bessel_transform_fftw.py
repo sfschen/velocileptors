@@ -7,14 +7,20 @@ import time
 
 from Utils.loginterp import loginterp
 
-# Class to perform spherical bessel transforms via FFTLog for a given set of qs, ie.
-# the untransformed coordinate, up to a given order L in bessel functions (j_l for l
-# less than or equal to L. The point is to save time by evaluating the Mellin transforms
-# u_m in advance.
-
-# Uses pyfftw, which can perform multiple (ncol) Fourier transforms at once, one for each bias contribution.
-
 class SphericalBesselTransform:
+    '''
+    Class to perform spherical bessel transforms via FFTLog for a given set of qs, ie.
+    the untransformed coordinate, up to a given order L in bessel functions (j_l for l
+    less than or equal to L. The point is to save time by evaluating the Mellin transforms
+    u_m in advance.
+    
+    Uses pyfftw, which can perform multiple (ncol) Fourier transforms at once, one for
+    each bias contribution.
+    
+    Based on Yin Li's package mcfit (https://github.com/eelregit/mcfit)
+    with the above modifications.
+    
+    '''
 
     def __init__(self, qs, L=15, ncol = 1, low_ring=True, fourier=False, threads=1,
                  import_wisdom=False, wisdom_file='./fftw_wisdom.npy'):

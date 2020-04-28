@@ -5,14 +5,25 @@ import time
 
 from Utils.loginterp import loginterp
 
-# Class to perform spherical bessel transforms via FFTLog for a given set of qs, ie.
-# the untransformed coordinate, up to a given order L in bessel functions (j_l for l
-# less than or equal to L. The point is to save time by evaluating the Mellin transforms
-# u_m in advance.
-
 class SphericalBesselTransform:
 
     def __init__(self, qs, L=15, low_ring=True, fourier=False):
+    
+        '''
+        Class to perform spherical bessel transforms via FFTLog for a given set of qs, ie.
+        the untransformed coordinate, up to a given order L in bessel functions (j_l for l
+        less than or equal to L. The point is to save time by evaluating the Mellin transforms
+        u_m in advance.
+        
+        Does not use fftw as in spherical_bessel_transform_fftw.py, which makes it convenient
+        to evaluate the generalized correlation functions in qfuncfft, as there aren't as many
+        ffts as in LPT modules so time saved by fftw is minimal when accounting for the
+        startup time of pyFFTW.
+        
+        Based on Yin Li's package mcfit (https://github.com/eelregit/mcfit)
+        with the above modifications.
+        
+        '''
 
         # numerical factor of sqrt(pi) in the Mellin transform
         # if doing integral in fourier space get in addition a factor of 2 pi / (2pi)^3

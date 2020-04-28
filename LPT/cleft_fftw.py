@@ -12,7 +12,16 @@ class CLEFT:
     '''
     Class to calculate power spectra up to one loop.
     
-    Based on Chirag's code, but using my own FFTLog code for faster evaluation. Now with FFTW!
+    Based on Chirag's code
+    
+    https://github.com/sfschen/velocileptors/blob/master/LPT/cleft_fftw.py
+    
+    The bias parameters are ordered in pktable as
+    1, b1, b1^2, b2, b1b2, b2^2, bs, b1bs, b2bs, bs^2, b3, b1 b3
+    where b3 is a catch-all for third order bias parameters degenerate at one-loop order.
+    
+    Can combine into a full one-loop real-space power spectrum using the function combine_bias_terms_pk.
+    
     '''
 
     def __init__(self, k, p, one_loop=True, shear=True, third_order=False, cutoff=10, jn=5, N = 2000, threads=1, extrap_min = -5, extrap_max = 3, import_wisdom=False, wisdom_file='wisdom.npy'):
@@ -104,7 +113,8 @@ class CLEFT:
 
     def p_integrals(self, k):
         '''
-        Only a small subset of terms included for now for testing.
+        Compute P(k) for a single k as a vector of all bias contributions.
+        
         '''
         ksq = k**2; kcu = k**3; k4 = k**4
         expon = np.exp(-0.5*ksq * (self.XYlin - self.sigma))
@@ -172,12 +182,17 @@ class CLEFT:
 
     def combine_bias_terms_pk(self, b1, b2, bs, b3, alpha, sn):
         '''
-        Combine all the bias terms into one power spectrum.
+        Combine all the bias terms into one power spectrum,
+        where alpha is the counterterm and sn the shot noise/stochastic contribution.
         
         Three options, for
+        
         (1) Full one-loop bias expansion (third order bias)
         (2) only quadratic bias, including shear
         (3) only density bias
+        
+        If (2) or (3), i.e. the class is set such that shear=False or third_order=False then the bs
+        and b3 parameters are not used.
         
         '''
         arr = self.pktable
