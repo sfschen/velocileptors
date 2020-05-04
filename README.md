@@ -1,7 +1,7 @@
 # velocileptors
 Velocity-based perturbation theory (both Lagrangian (LPT) and Eulerian (EPT)
 formulations) expansions of redshift-space distortions and
-velocity statistics.
+velocity statistics. 
 
 This code computes the real- and redshift-space power spectra and
 correlation functions of biased tracers using 1-loop perturbation
@@ -83,7 +83,7 @@ in which case the code only uses up to sigma(k), and uses a counterterm
 ansatz for the third and fourth moments.
 In this case the parameters alpha_g1, alpha_g3, alpha_k2, and s4 are not used.
 
-More details can be found in Chen, Vlah & White (2020).
+More details can be found in Chen, Vlah & White (2020). https://arxiv.org/abs/2005.00523
 
 ---
 
