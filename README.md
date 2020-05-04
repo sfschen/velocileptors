@@ -1,4 +1,5 @@
-# velocileptors
+# velocileptors (branch cosmo: readying code for data analyses)
+
 Velocity-based perturbation theory (both Lagrangian (LPT) and Eulerian (EPT)
 formulations) expansions of redshift-space distortions and
 velocity statistics. 
