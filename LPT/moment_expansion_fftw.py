@@ -1,5 +1,7 @@
 import numpy as np
+from Utils.loginterp import loginterp
 from LPT.velocity_moments_fftw import VelocityMoments
+
 
 
 class MomentExpansion(VelocityMoments):
@@ -56,14 +58,24 @@ class MomentExpansion(VelocityMoments):
             self.convert_kappa_bases()
         
 
-    def compute_redshift_space_power_at_mu(self,pars,f,mu,counterterm_c3=0,reduced=False):
+    def compute_redshift_space_power_at_mu(self,pars,f,mu_obs,counterterm_c3=0,reduced=False,apar=1,aperp=1):
         '''
         Moment expansion approach.
         
         The "reduced" basis of stochastic and counterterms is equivalent
         to Equation 5.1 in Chen, Vlah & White (2020).
+        
+        If AP parameters apar and aperp are nonzero then the input/output  k, mu refer to the observed.
+        
         '''
+        # Change mu to the "true" from the input observed
+        # Note that kv below refers to "true" k
+        F = apar/aperp
+        AP_fac = np.sqrt(1 + mu_obs**2 *(1./F**2 - 1) )
+        mu = mu_obs / F / AP_fac
+        
         # If using a reduced vector, make a new one.
+
         mu2 = mu**2
         if self.beyond_gauss:
             if reduced:
@@ -107,16 +119,19 @@ class MomentExpansion(VelocityMoments):
                 kv, vk = self.combine_bias_terms_vk(b1,b2,bs,b3,alpha_v,sv)
                 kv, s0, s2 = self.combine_bias_terms_sk(b1,b2,bs,b3,alpha_s0,alpha_s2,sigma0_stoch,basis='Polynomial')
 
-
             mu2 = mu**2
             ret = pk - f * kv * mu2 * vk -\
                 0.5 * f**2 * kv**2 * mu2 * ( s0 + s2* mu2 ) +\
                 ct3 /6. * self.kv**2 * mu2**2 * self.pktable[:,-1]
-            
-        return self.kv, ret
+        
+        # Interpolate onto true wavenumbers
+        kobs = self.kv * aperp / AP_fac
+        pks_obs = loginterp(kobs ret)(self.kv)
+        
+        return self.kv, ret / aperp**2 / apar
 
 
-    def compute_redshift_space_power_multipoles(self, pars, f, counterterm_c3=0, ngauss=4, reduced=False):
+    def compute_redshift_space_power_multipoles(self, pars, f, counterterm_c3=0, ngauss=4, reduced=False, apar=1, aperp = 1):
 
         # Generate the sampling
         nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
@@ -129,7 +144,7 @@ class MomentExpansion(VelocityMoments):
         self.pknutable = np.zeros((len(nus),self.nk))
         
         for ii, nu in enumerate(nus_calc):
-            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(pars,f,nu,reduced=reduced,counterterm_c3=counterterm_c3)[1]
+            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(pars,f,nu,reduced=reduced,counterterm_c3=counterterm_c3,apar=apar,aperp=aperp)[1]
                 
         self.pknutable[ngauss:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
         
