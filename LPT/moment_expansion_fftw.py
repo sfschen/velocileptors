@@ -131,9 +131,10 @@ class MomentExpansion(VelocityMoments):
         # Interpolate onto true wavenumbers
         kobs = self.kv * aperp / AP_fac
         pks_obs = interp1d(kobs, ret, kind='cubic', fill_value='extrapolate')(self.kv)
+        pks_obs = pks_obs / aperp**2 / apar
         #pks_obs = np.interp(self.kv, kobs, ret)
         
-        return self.kv, pks_obs  / aperp**2 / apar
+        return self.kv, pks_obs
 
 
     def compute_redshift_space_power_multipoles(self, pars, f, counterterm_c3=0, ngauss=4, reduced=False, apar=1, aperp = 1):
