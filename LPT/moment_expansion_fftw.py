@@ -72,6 +72,8 @@ class MomentExpansion(VelocityMoments):
         '''
         # Change mu to the "true" from the input observed
         # Note that kv below refers to "true" k
+        # We follow the notation/conventions in https://arxiv.org/abs/1607.03150
+        # Eqs. (44-46).
         F = apar/aperp
         AP_fac = np.sqrt(1 + mu_obs**2 *(1./F**2 - 1) )
         mu = mu_obs / F / AP_fac
