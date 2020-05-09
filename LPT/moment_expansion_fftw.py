@@ -68,6 +68,8 @@ class MomentExpansion(VelocityMoments):
         to Equation 5.1 in Chen, Vlah & White (2020).
         
         If AP parameters apar and aperp are nonzero then the input/output  k, mu refer to the observed.
+        We use "physical" AP parameters, defined as the scaling of distances parallel and perpendicular
+        to the line of sight.  An alternative convention scales AP parameters by ratios of sound horizons.
         
         '''
         # Change mu to the "true" from the input observed
