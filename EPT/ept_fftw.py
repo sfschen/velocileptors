@@ -28,7 +28,8 @@ class EPT(KEVelocityMoments):
         self.convert_ptable()
         self.convert_vtable()
         self.convert_stable()
-        self.convert_gtable()
+        if self.beyond_gauss:
+            self.convert_gtable()
         
     
     def convert_ptable(self):

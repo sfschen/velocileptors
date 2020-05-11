@@ -1,6 +1,8 @@
 import numpy as np
 
 from scipy.signal import savgol_filter
+from scipy.interpolate import interp1d
+
 
 from Utils.loginterp import loginterp
 from EPT.ept_fftw import EPT

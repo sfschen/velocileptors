@@ -69,7 +69,7 @@ class KEVelocityMoments(KECLEFT):
         self.make_stracetable(kmin=kmin, kmax=kmax, nk=nk)
         self.convert_sigma_bases()
         
-        if self.beyond_gauss:
+        if self.beyond_gauss: # make these even if not required since they're fast
             self.make_gamma1table(kmin=kmin,kmax=kmax,nk=nk)
             self.make_gamma2table(kmin=kmin,kmax=kmax,nk=nk)
             self.convert_gamma_bases()
