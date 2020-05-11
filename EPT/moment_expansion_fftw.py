@@ -129,7 +129,21 @@ class MomentExpansion:
     # In this case the parameters alpha_g1, alpha_g3, alpha_k2, stoch_k0 are not used--set to zero if desired.
     # Otherwise gives the full moment expansion expression up to one-loop order.
     
-    def compute_redshift_space_power_at_mu(self,pars,f,mu, counterterm_c3 = 0, beyond_gauss=False, reduced=True):
+    def compute_redshift_space_power_at_mu(self,pars,f,mu_obs,counterterm_c3=0,beyond_gauss=False,reduced=True,apar=1.0,aperp=1.0):
+        '''
+        If AP parameters apar and aperp are nonzero then the input/output
+        k, mu refer to the observed.
+        We use "physical" AP parameters, defined as the scaling of distances
+        parallel and perpendicular to the line of sight.
+        '''
+        # Change mu to the "true" from the input observed
+        # Note that kv below refers to "true" k
+        # We follow the notation/conventions in
+        # https://arxiv.org/abs/1312.4611  Eqs. (58-60).
+        F = apar/aperp
+        AP_fac = np.sqrt(1 + mu_obs**2 *(1./F**2 - 1) )
+        mu = mu_obs / F / AP_fac
+
         
         if beyond_gauss:
             if reduced:
@@ -162,8 +176,13 @@ class MomentExpansion:
                    + 1./24 * f**4 * (kv*mu)**4 * (k0k + k2k * mu2 + k4k * mu2**2)
         else:
             ret += 1./6 * counterterm_c3 * kv**2 * mu**4 * self.plin_ir
+
+        # Interpolate onto true wavenumbers
+        kobs = self.kv * aperp / AP_fac
+        pobs = interp1d(kobs,ret,kind='cubic',fill_value='extrapolate')(self.kv)
+        pobs = pobs / aperp**2 / apar
         
-        return kv, ret
+        return kv, pobs
         
     def compute_redshift_space_power_multipoles(self, pars, f, counterterm_c3=0, ngauss=4, reduced=False,beyond_gauss=False):
 
