@@ -138,13 +138,17 @@ class GaussianStreamingModel(VelocityMoments):
                                                            + alpha_s2 * self.s2ct
 
 
-    def compute_xi_rsd(self, sperp, spar, f, b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2, rwidth=100, Nint=10000, update_cumulants=True):
+    def compute_xi_rsd(self, sperp_obs, spar_obs, f, b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2, apar=1.0, aperp=1.0, rwidth=100, Nint=10000, update_cumulants=True):
         '''
         Compute the redshift-space xi(sperpendicular,sparallel).
         '''
         # If cumulants have already been computed, skip this step:
         if update_cumulants:
             self.compute_cumulants(b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2)
+
+        # define "true" coordinates using A-P parameters.
+        spar  = spar_obs  * apar
+        sperp = sperp_obs * aperp
 
         # definte integration coords
         ys = np.linspace(-rwidth,rwidth,Nint) # this z - s_par
@@ -161,7 +165,7 @@ class GaussianStreamingModel(VelocityMoments):
         return np.trapz(integrand, x=ys) - 1
 
 
-    def compute_xi_ell(self, s, f, b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2, rwidth=100, Nint=10000, ngauss=4):
+    def compute_xi_ell(self, s, f, b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2, apar=1.0, aperp=1.0,  rwidth=100, Nint=10000, ngauss=4):
         '''
         Compute the redshift-space correlation function multipoles
         '''
@@ -179,7 +183,7 @@ class GaussianStreamingModel(VelocityMoments):
         
         xi0, xi2, xi4 = 0,0,0
         for ii, nu in enumerate(nus_calc):
-            xi_nu = self.compute_xi_rsd(s*np.sqrt(1-nu**2),s*nu, f, b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2, rwidth=rwidth, Nint=Nint, update_cumulants=False)
+            xi_nu = self.compute_xi_rsd(s*np.sqrt(1-nu**2),s*nu, f, b1, b2, bs, b3, alpha, alpha_v, s2fog, alpha_s0, alpha_s2, apar=apar, aperp=aperp, rwidth=rwidth, Nint=Nint, update_cumulants=False)
             xi0 += xi_nu * L0[ii] * 1 * ws[ii]
             xi2 += xi_nu * L2[ii] * 5 * ws[ii]
             xi4 += xi_nu * L4[ii] * 9 * ws[ii]
