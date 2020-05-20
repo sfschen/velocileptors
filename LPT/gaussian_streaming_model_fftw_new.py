@@ -16,15 +16,15 @@ class GaussianStreamingModel(VelocityMoments):
     
     Inherits the VelocityMoments class which itself inherits the CLEFT class.
     
-    Note if third_order = False passing b_3 to the functions will simply produce no effect.
+    Assumes third_order = True. Simply set b3 = 0 if not using third-order bias.
     '''
 
-    def __init__(self, *args, kmin=1e-3, kmax=3, nk= 200, jn = 10, cutoff=20, kswitch=3e-3, **kw):
+    def __init__(self, *args, kmin = 3e-3, kmax=0.5, nk = 100, kswitch=1e-2, jn = 5, cutoff=20, **kw):
         '''
         Same keywords and arguments as the other two classes for now.
         '''
         # Setup ffts etc.
-        VelocityMoments.__init__(self, *args, **kw)
+        VelocityMoments.__init__(self, *args, third_order=True, **kw)
 
         self.kmin, self.kmax, self.nk = kmin, kmax, nk
         self.kv = np.logspace(np.log10(kmin), np.log10(kmax), nk); self.nk = nk
@@ -116,10 +116,14 @@ class GaussianStreamingModel(VelocityMoments):
 
 
 
-    def compute_xi_rsd(self, sperp, spar, f, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog, rwidth=100, Nint=10000, update_cumulants=False):
+    def compute_xi_rsd(self, sperp_obs, spar_obs, f, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog, apar=1.0, aperp=1.0, rwidth=100, Nint=10000, update_cumulants=False):
         '''
         Compute the redshift-space xi(sperpendicular,sparallel).
         '''
+        # define "true" coordinates using A-P parameters.
+        spar  = spar_obs  * apar
+        sperp = sperp_obs * aperp
+        
         # If cumulants have already been computed for same parameters, skip this step:
         pars_new = np.array([b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog])
         if update_cumulants or (self.peft is None) or (not np.allclose(self.pars,pars_new)):
@@ -140,7 +144,7 @@ class GaussianStreamingModel(VelocityMoments):
         return np.trapz(integrand, x=ys) - 1
 
 
-    def compute_xi_ell(self, s, f, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog, rwidth=100, Nint=10000, ngauss=4, update_cumulants=False):
+    def compute_xi_ell(self, s, f, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog, apar=1.0, aperp=1.0, rwidth=100, Nint=10000, ngauss=4, update_cumulants=False):
         '''
         Compute the redshift-space correlation function multipoles
         '''
@@ -158,7 +162,7 @@ class GaussianStreamingModel(VelocityMoments):
         
         xi0, xi2, xi4 = 0,0,0
         for ii, nu in enumerate(nus_calc):
-            xi_nu = self.compute_xi_rsd(s*np.sqrt(1-nu**2),s*nu, f, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog, rwidth=rwidth, Nint=Nint, update_cumulants=update_cumulants)
+            xi_nu = self.compute_xi_rsd(s*np.sqrt(1-nu**2),s*nu, f, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog, apar=apar, aperp=aperp, rwidth=rwidth, Nint=Nint, update_cumulants=update_cumulants)
             xi0 += xi_nu * L0[ii] * 1 * ws[ii]
             xi2 += xi_nu * L2[ii] * 5 * ws[ii]
             xi4 += xi_nu * L4[ii] * 9 * ws[ii]
