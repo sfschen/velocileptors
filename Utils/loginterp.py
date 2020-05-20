@@ -4,7 +4,7 @@ from scipy.misc import derivative
 import inspect
 
 def loginterp(x, y, yint = None, side = "both", lorder = 9, rorder = 9, lp = 1, rp = -1,
-              ldx = 1e-6, rdx = 1e-6, lneff=None, rneff=None):
+              ldx = 1e-6, rdx = 1e-6):
     '''
     Extrapolate function by evaluating a log-index of left & right side.
     
@@ -19,10 +19,8 @@ def loginterp(x, y, yint = None, side = "both", lorder = 9, rorder = 9, lp = 1, 
     l = lp
     r = rp
     
-    if lneff is not None:
-        lneff = derivative(yint, x[l], dx = x[l]*ldx, order = lorder)*x[l]/y[l]
-    if rneff is not None:
-        rneff = derivative(yint, x[r], dx = x[r]*rdx, order = rorder)*x[r]/y[r]
+    lneff = derivative(yint, x[l], dx = x[l]*ldx, order = lorder)*x[l]/y[l]
+    rneff = derivative(yint, x[r], dx = x[r]*rdx, order = rorder)*x[r]/y[r]
     if lneff < 0:
         print( 'In function - ', inspect.getouterframes( inspect.currentframe() )[2][3])
         print('WARNING: Runaway index on left side, bad interpolation. Left index = %0.3e at %0.3e'%(lneff, x[l]))
