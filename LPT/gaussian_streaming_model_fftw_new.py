@@ -37,6 +37,9 @@ class GaussianStreamingModel(VelocityMoments):
         
         self.window = tukey(4000)
         self.weight =  0.5 * (1 + np.tanh(3*np.log(self.kint/kswitch)))
+        self.weight[self.weight < 1e-3] = 0
+        
+        self.pars = np.array([0,0,0,0, 0,0,0,0, 0])
         self.peft = None
         self.veft = None
         self.s0eft = None
@@ -58,6 +61,8 @@ class GaussianStreamingModel(VelocityMoments):
         Calculate velocity moments and turn into cumulants.
         '''
         # Compute each moment
+        
+        self.pars = np.array([b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog])
         
         self.kv   = self.pktable[:,0]
         self.pzel = self.pktable[:,-1]
@@ -115,9 +120,9 @@ class GaussianStreamingModel(VelocityMoments):
         '''
         Compute the redshift-space xi(sperpendicular,sparallel).
         '''
-        # If cumulants have already been computed, skip this step:
-        if update_cumulants or (self.peft is None):
-            print("Here.")
+        # If cumulants have already been computed for same parameters, skip this step:
+        pars_new = np.array([b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog])
+        if update_cumulants or (self.peft is None) or (not np.allclose(self.pars,pars_new)):
             self.compute_cumulants(b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog)
 
         # definte integration coords
@@ -153,7 +158,7 @@ class GaussianStreamingModel(VelocityMoments):
         
         xi0, xi2, xi4 = 0,0,0
         for ii, nu in enumerate(nus_calc):
-            xi_nu = self.compute_xi_rsd(s*np.sqrt(1-nu**2),s*nu, f, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog, rwidth=rwidth, Nint=Nint, update_cumulants=False)
+            xi_nu = self.compute_xi_rsd(s*np.sqrt(1-nu**2),s*nu, f, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog, rwidth=rwidth, Nint=Nint, update_cumulants=update_cumulants)
             xi0 += xi_nu * L0[ii] * 1 * ws[ii]
             xi2 += xi_nu * L2[ii] * 5 * ws[ii]
             xi4 += xi_nu * L4[ii] * 9 * ws[ii]
