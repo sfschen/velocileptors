@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.interpolate import InterpolatedUnivariateSpline as Spline
+from scipy.signal import tukey
 
 from Utils.spherical_bessel_transform import SphericalBesselTransform
 from Utils.loginterp import loginterp
@@ -33,6 +34,9 @@ class GaussianStreamingModel(VelocityMoments):
         self.rint = np.logspace(-3,5,4000)
         self.rint = self.rint[(self.rint>0.1)*(self.rint<600)] #actual range of integration
         
+        self.window = tukey(4000)
+        
+        
         self.setup_velocity_moments()
         self.setup_config_vels()
 
@@ -50,13 +54,9 @@ class GaussianStreamingModel(VelocityMoments):
 
         for ii in range(self.num_power_components-1):
             _integrand = loginterp(self.pktable[:,0], self.pktable[:,1+ii])(self.kint)
-            qs, xs = self.sph_gsm.sph(0,_integrand)
+            qs, xs = self.sph_gsm.sph(0,_integrand * self.window)
             self.xitable[:,ii] = np.interp(self.rint, qs, xs)
             
-        _integrand = loginterp(self.pktable[:,0], self.pktable[:,1])(self.kint)
-        qint, ximatter = self.sph_gsm.sph(0,_integrand)
-        self.ximatter = np.interp(self.rint, qint, ximatter)
-
         _integrand = loginterp(self.pktable[:,0], self.pktable[:,0]**2 * self.pktable[:,-1])(self.kint)
         qint, xict = self.sph_gsm.sph(0,_integrand)
         self.xict = np.interp(self.rint, qint, xict)
@@ -66,12 +66,8 @@ class GaussianStreamingModel(VelocityMoments):
 
         for ii in range(self.num_power_components-1):
             _integrand = loginterp(self.vktable[:,0], self.vktable[:,1+ii])(self.kint)
-            qs, xs = self.sph_gsm.sph(1,_integrand)
+            qs, xs = self.sph_gsm.sph(1,_integrand * self.window)
             self.vtable[:,ii] = np.interp(self.rint, qs, xs)
-            
-        _integrand = loginterp(self.vktable[:,0], self.vktable[:,1])(self.kint)
-        qint, ximatter = self.sph_gsm.sph(1,_integrand)
-        self.vmatter = np.interp(self.rint, qint, ximatter)
 
         _integrand = loginterp(self.vktable[:,0], self.vktable[:,0] * self.pktable[:,-1])(self.kint)
         qint, xict = self.sph_gsm.sph(1,_integrand)
@@ -82,22 +78,14 @@ class GaussianStreamingModel(VelocityMoments):
         self.s2table = np.zeros((len(self.rint),12))
         for ii in range(self.num_power_components-1):
             _integrand = loginterp(self.s0[1:,0], self.s0[1:,1+ii])(self.kint)
-            qs, xs = self.sph_gsm.sph(0,_integrand)
+            qs, xs = self.sph_gsm.sph(0,_integrand * self.window)
             self.s0table[:,ii] = np.interp(self.rint, qs, xs)
             
             _integrand = loginterp(self.s2[1:,0], self.s2[1:,1+ii])(self.kint)
-            qs, xs  = self.sph_gsm.sph(2,_integrand)
+            qs, xs = self.sph_gsm.sph(2,_integrand * self.window)
             self.s2table[:,ii] = np.interp(self.rint, qs, xs)
             
         self.s2table *= -1
-            
-        _integrand = loginterp(self.sparktable[10:,0], self.s0[10:,1])(self.kint)
-        qint, s0matter = self.sph_gsm.sph(0,_integrand)
-        self.s0matter = np.interp(self.rint, qint, s0matter)
-
-        _integrand = loginterp(self.sparktable[5:,0], self.s2[5:,1])(self.kint)
-        qint2, s2matter = self.sph_gsm.sph(2,_integrand); s2matter *=-1
-        self.s2matter = np.interp(self.rint, qint2, s2matter)
 
         _integrand = loginterp(self.pktable[:,0], self.pktable[:,-1])(self.kint)
         qint, xict = self.sph_gsm.sph(0,_integrand)
@@ -115,24 +103,24 @@ class GaussianStreamingModel(VelocityMoments):
         Calculate velocity moments and turn into cumulants.
         '''
         # Compute each moment
-        self.xieft = self.ximatter + b1*self.xitable[:,1] + b1**2*self.xitable[:,2]\
+        self.xieft = self.xitable[:,0] + b1*self.xitable[:,1] + b1**2*self.xitable[:,2]\
         + b2*self.xitable[:,3] + b1*b2*self.xitable[:,4] + b2**2 * self.xitable[:,5]\
         + bs*self.xitable[:,6] + b1*bs*self.xitable[:,7] + b2*bs*self.xitable[:,8]\
         + bs**2*self.xitable[:,9] + b3*self.xitable[:,10] + b1*b3*self.xitable[:,11] + alpha*self.xict
         
-        self.veft = self.vmatter + b1*self.vtable[:,1] + b1**2*self.vtable[:,2]\
+        self.veft = self.vtable[:,0] + b1*self.vtable[:,1] + b1**2*self.vtable[:,2]\
         + b2*self.vtable[:,3] + b1*b2*self.vtable[:,4] \
         + bs*self.vtable[:,6] + b1*bs*self.vtable[:,7] + b3 * self.vtable[:,10]\
         + alpha_v*self.vct
         
-        self.s0eft =  self.s0matter + b1*self.s0table[:,1] + b1**2*self.s0table[:,2]\
+        self.s0eft =  self.s0table[:,0] + b1*self.s0table[:,1] + b1**2*self.s0table[:,2]\
                                                            + b2*self.s0table[:,3] \
                                                            + bs*self.s0table[:,6] \
                                                            + alpha_s0 * self.s0ct \
                                                            + s2fog
         self.s0eft += (self.Xddot + self.Xloopddot + 2*b1*self.X10ddot + 2*bs*self.Xs2ddot)[-1] #add in 0-lag term
                                                            
-        self.s2eft =  self.s2matter + b1*self.s2table[:,1] + b1**2*self.s2table[:,2]\
+        self.s2eft =  self.s2table[:,0] + b1*self.s2table[:,1] + b1**2*self.s2table[:,2]\
                                                            + b2*self.s2table[:,3] \
                                                            + bs*self.s2table[:,6] \
                                                            + alpha_s2 * self.s2ct
