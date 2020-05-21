@@ -49,6 +49,8 @@ class SphericalBesselTransform:
         if import_wisdom:
             pyfftw.import_wisdom(tuple(np.load(wisdom_file)))
         
+        #flags = ('FFTW_DESTROY_INPUT','FFTW_MEASURE')
+        
         self.fks = pyfftw.empty_aligned((self.ncol,self.N//2 + 1), dtype='complex128')
         self.fs  = pyfftw.empty_aligned((self.ncol,self.N), dtype='float64')
         
@@ -93,6 +95,7 @@ class SphericalBesselTransform:
         The workhorse of the class. Spherical Hankel Transforms fq on coordinates self.q.
         '''
         q = self.qdict[nu]; y = self.ydict[nu]
+        self.fs[:] = 0 # on NERSC this seems necessary or this variable spills over from previous calls
         self.fs[:,self.Npad - self.Npad//2 : self.N - self.Npad//2] = fq * self.q**(3-q)
         
         fks = self.fft_object()
