@@ -1,4 +1,4 @@
-# velocileptors (branch cosmo: readying code for data analyses)
+# velocileptors
 
 Velocity-based perturbation theory (both Lagrangian (LPT) and Eulerian (EPT)
 formulations) expansions of redshift-space distortions and
@@ -63,6 +63,8 @@ where
 To include higher order terms in the moment expansion set beyond_gauss=True.
 In this case you need to additionally specify an alpha6 counterterm and
 an sn4 stochastic term.
+
+You can also set the AP parameters using keywords apar and aperp.
 
 -------
 
