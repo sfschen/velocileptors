@@ -116,7 +116,7 @@ class GaussianStreamingModel(VelocityMoments):
 
 
 
-    def compute_xi_rsd(self, sperp_obs, spar_obs, f, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog, apar=1.0, aperp=1.0, rwidth=100, Nint=10000, update_cumulants=False):
+    def compute_xi_rsd(self, sperp_obs, spar_obs, f, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog, apar=1.0, aperp=1.0, rwidth=100, Nint=10000, update_cumulants=False, toler=1e-5):
         '''
         Compute the redshift-space xi(sperpendicular,sparallel).
         '''
@@ -137,6 +137,12 @@ class GaussianStreamingModel(VelocityMoments):
         xi_int = 1 + np.interp(rs, self.rint, self.xieft)
         v_int  = f*( np.interp(rs, self.rint, self.veft) * mus ) / xi_int
         s_int  = f**2 * ( np.interp(rs, self.rint, self.s0eft) + 0.5 * (3*mus**2 - 1) * np.interp(rs, self.rint, self.s2eft) )/xi_int - v_int**2
+        
+        # Need to deal with s_int < 0, since it's not allowed but can be induced by ct's
+        # As a rought patch just kill s_int where it's smaller than some fraction of max
+        smax = np.max(s_int)
+        siis = s_int < (toler * smax)
+        s_int[siis] = toler * smax
 
         
         integrand = xi_int * np.exp( -0.5 * (ys - v_int)**2 / s_int ) / np.sqrt(2*np.pi*s_int)
