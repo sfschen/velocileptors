@@ -86,7 +86,7 @@ class GaussianStreamingModel(VelocityMoments):
         _integrand = loginterp(self.kv, self.vkeft)(self.kint)
         _integrand = self.weight * _integrand + (1-self.weight) * (-2 * (1+b1) * self.plin/self.kint)
 
-        qint, xi = self.sph_gsm.sph(1,_integrand)
+        qint, xi = self.sph_gsm.sph(1,_integrand*self.window)
         self.veft = np.interp(self.rint, qint, xi)
         
         self.s0keft =  self.s0[:,1] + b1*self.s0[:,2] + b1**2*self.s0[:,3]\
