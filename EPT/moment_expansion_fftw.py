@@ -24,7 +24,7 @@ class MomentExpansion:
         self.nk, self.kmin, self.kmax = nk, kmin, kmax
         self.rbao = rbao
         
-        self.ept = EPT( k, p, kmin=kmin, kmax=kmax, **kw)
+        self.ept = EPT( k, p, kmin=kmin, kmax=kmax, nk=nk, **kw)
         if pnw is None:
             knw = self.ept.kint
             Nfilter =  np.ceil(np.log(7) /  np.log(knw[-1]/knw[-2])) // 2 * 2 + 1 # filter length ~ log span of one oscillation from k = 0.01
@@ -33,7 +33,7 @@ class MomentExpansion:
         else:
             knw, pnw = k, pnw
           
-        self.ept_nw = EPT( knw, pnw, kmin=kmin, kmax=kmax, **kw)
+        self.ept_nw = EPT( knw, pnw, kmin=kmin, kmax=kmax, nk=nk, **kw)
         self.beyond_gauss = self.ept.beyond_gauss
         
         self.kv = self.ept.kv
