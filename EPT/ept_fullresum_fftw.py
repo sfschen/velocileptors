@@ -1,6 +1,7 @@
 import numpy as np
 
 from scipy.signal import savgol_filter
+from scipy.interpolate import interp1d
 
 from Utils.loginterp import loginterp
 
@@ -84,8 +85,16 @@ class REPT:
     
     # Combine everything into redshift space power spectrum, all at once!
     
-    def compute_redshift_space_power_at_mu(self, pars, f, mu):
-    
+    def compute_redshift_space_power_at_mu(self, pars, f, mu_obs, apar=1., aperp=1.):
+        
+        # Change mu to the "true" from the input observed
+        # Note that kv below refers to "true" k
+        # We follow the notation/conventions in
+        # https://arxiv.org/abs/1312.4611  Eqs. (58-60).
+        F = apar/aperp
+        AP_fac = np.sqrt(1 + mu_obs**2 *(1./F**2 - 1) )
+        mu = mu_obs / F / AP_fac
+        
         b1, b2, bs, b3, alpha0, alpha2, alpha4, alpha6, sn, sn2, sn4 = pars
         
         kv = self.kv
@@ -146,11 +155,16 @@ class REPT:
         ret += (alpha0 + alpha2 * mu**2 + alpha4 * mu**4 + alpha6 * mu**6) * kv**2 * (self.plin_nw + damp_fac*self.plin_w)
         ret += (sn + kv**2 * mu**2 * sn2 + kv**4 * mu**4 * sn4)
         
-        return kv, ret
+        # Interpolate onto true wavenumbers
+        kobs = kv * aperp / AP_fac
+        pobs = interp1d(kobs,ret,kind='cubic',fill_value='extrapolate')(self.kv)
+        pobs = pobs / aperp**2 / apar
+        
+        return kv, pobs
         
 
 
-    def compute_redshift_space_power_multipoles(self, pars, f, ngauss=4):
+    def compute_redshift_space_power_multipoles(self, pars, f, ngauss=4, apar=1., aperp=1.):
 
         # Generate the sampling
         nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
@@ -163,7 +177,7 @@ class REPT:
         self.pknutable = np.zeros((len(nus),self.nk))
         
         for ii, nu in enumerate(nus_calc):
-            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(pars,f,nu)[1]
+            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(pars,f,nu,apar=apar,aperp=aperp)[1]
                 
         self.pknutable[ngauss:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
         
