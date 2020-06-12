@@ -28,7 +28,7 @@ class MomentExpansion:
         if pnw is None:
             knw = self.ept.kint
             Nfilter =  np.ceil(np.log(7) /  np.log(knw[-1]/knw[-2])) // 2 * 2 + 1 # filter length ~ log span of one oscillation from k = 0.01
-            print(Nfilter)
+            #print(Nfilter)
             pnw = savgol_filter(self.ept.pint, int(Nfilter), 4)
         else:
             knw, pnw = k, pnw
