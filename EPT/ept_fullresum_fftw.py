@@ -18,12 +18,12 @@ class REPT:
     
     '''
     
-    def __init__(self, k, p, pnw=None, *args, rbao = 110, kmin = 1e-2, kmax = 0.5, nk = 100, **kw):
+    def __init__(self, k, p, pnw=None, *args, rbao = 110, kmin = 1e-2, kmax = 0.5, nk = 100, sbao=None, **kw):
         
         self.nk, self.kmin, self.kmax = nk, kmin, kmax
         self.rbao = rbao
         
-        self.ept = EPT( k, p, kmin=kmin, kmax=kmax, **kw)
+        self.ept = EPT( k, p, kmin=kmin, kmax=kmax, nk = nk, third_order=True, **kw)
         
         if pnw is None:
             knw = self.ept.kint
@@ -32,7 +32,8 @@ class REPT:
             pnw = savgol_filter(self.ept.pint, int(Nfilter), 4)
         else:
             knw, pnw = k, pnw
-        self.ept_nw = EPT( knw, pnw, kmin=kmin, kmax=kmax, **kw)
+            
+        self.ept_nw = EPT( knw, pnw, kmin=kmin, kmax=kmax, nk = nk, third_order=True, **kw)
         
         self.beyond_gauss = self.ept.beyond_gauss
         
@@ -40,7 +41,10 @@ class REPT:
         self.plin  = loginterp(k, p)(self.kv)
         self.plin_nw = loginterp(knw, pnw)(self.kv)
         self.plin_w = self.plin - self.plin_nw
-        self.sigma_squared_bao = np.interp(self.rbao, self.ept_nw.qint, self.ept_nw.Xlin + self.ept_nw.Ylin/3.)
+        if sbao is None:
+            self.sigma_squared_bao = np.interp(self.rbao, self.ept_nw.qint, self.ept_nw.Xlin + self.ept_nw.Ylin/3.)
+        else:
+            self.sigma_squared_bao = sbao
         self.damp_exp = - 0.5 * self.kv**2 * self.sigma_squared_bao
         self.damp_fac = np.exp(self.damp_exp)
         
@@ -51,35 +55,35 @@ class REPT:
         self.pktable = self.pktable_nw + self.pktable_w; self.pktable[:,0] = self.kv
         
         self.vktable_nw = self.ept_nw.vktable_ept
-        self.vktable_w  = self.damp_fac[:,None] *( (self.ept.vktable_ept - self.vktable_nw) - self.damp_exp[:,None] * (self.ept.vktable_ept_linear - self.ept_nw.vktable_ept_linear) )
+        self.vktable_w  = self.ept.vktable_ept - self.vktable_nw
         self.vktable_w[:,0] = self.kv
         self.vktable = self.vktable_nw + self.vktable_w; self.vktable[:,0] = self.kv
         
         self.s0ktable_nw = self.ept_nw.s0ktable_ept
-        self.s0ktable_w  = self.damp_fac[:,None] *( (self.ept.s0ktable_ept - self.s0ktable_nw) - self.damp_exp[:,None] * (self.ept.s0ktable_ept_linear - self.ept_nw.s0ktable_ept_linear) )
+        self.s0ktable_w  =  self.ept.s0ktable_ept - self.s0ktable_nw
         self.s0ktable_w[:,0] = self.kv
         self.s0ktable = self.s0ktable_nw + self.s0ktable_w; self.s0ktable[:,0] = self.kv
         
         self.s2ktable_nw = self.ept_nw.s2ktable_ept
-        self.s2ktable_w  = self.damp_fac[:,None] *( (self.ept.s2ktable_ept - self.s2ktable_nw) - self.damp_exp[:,None] * (self.ept.s2ktable_ept_linear - self.ept_nw.s2ktable_ept_linear) )
+        self.s2ktable_w  = self.ept.s2ktable_ept - self.s2ktable_nw
         self.s2ktable_w[:,0] = self.kv
         self.s2ktable = self.s2ktable_nw + self.s2ktable_w; self.s2ktable[:,0] = self.kv
         
         if self.beyond_gauss:
             self.g1ktable_nw = self.ept_nw.g1ktable_ept
-            self.g1ktable_w = self.damp_fac[:,None] * (self.ept.g1ktable_ept - self.ept_nw.g1ktable_ept)
+            self.g1ktable_w = self.ept.g1ktable_ept - self.ept_nw.g1ktable_ept
             self.g1ktable_w[:,0] = self.kv
             self.g1ktable = self.g1ktable_nw + self.g1ktable_w; self.g1ktable[:,0] = self.kv
         
             self.g3ktable_nw = self.ept_nw.g3ktable_ept
-            self.g3ktable_w = self.damp_fac[:,None] * (self.ept.g3ktable_ept - self.ept_nw.g3ktable_ept)
+            self.g3ktable_w = self.ept.g3ktable_ept - self.ept_nw.g3ktable_ept
             self.g3ktable_w[:,0] = self.kv
             self.g3ktable = self.g3ktable_nw + self.g3ktable_w; self.g3ktable[:,0] = self.kv
         
             self.k0_nw, self.k2_nw, self.k4_nw = self.ept_nw.k0, self.ept_nw.k2, self.ept_nw.k4
-            self.k0_w = self.damp_fac * (self.ept.k0 - self.ept_nw.k0)
-            self.k2_w = self.damp_fac * (self.ept.k2 - self.ept_nw.k2)
-            self.k4_w = self.damp_fac * (self.ept.k4 - self.ept_nw.k4)
+            self.k0_w = self.ept.k0 - self.ept_nw.k0
+            self.k2_w = self.ept.k2 - self.ept_nw.k2
+            self.k4_w = self.ept.k4 - self.ept_nw.k4
             self.k0 = self.k0_nw + self.k0_w; self.k2 = self.k2_nw + self.k2_w; self.k4 = self.k4_nw + self.k4_w
         
     

@@ -569,7 +569,7 @@ class KEVelocityMoments(KECLEFT):
             mu0fac = (l == 0)
             mu2fac = 1./3 * (l==0) - 2./3*(l==2)
             mu4fac = 0.2 * (l==0) - 4./7*(l==2) + 8./35*(l==4)
-                
+            
             bias_integrands[0,:] = mu0fac * (15 * self.Xddot**2 + 10 * self.Xddot*self.Yddot + 3 * self.Yddot**2)
             bias_integrands[1,:] = mu0fac * (5 * self.Xddot**2 + self.Xddot*self.Yddot) + \
                                    mu2fac * (7*self.Xddot*self.Yddot + 3*self.Yddot**2)
