@@ -47,7 +47,7 @@ class EPT(KEVelocityMoments):
         self.pktable_ept[:,4] = pktable[:,6] # b2sq
         self.pktable_ept[:,5] = pktable[:,9] # b2bs
         self.pktable_ept[:,6] = pktable[:,10] # bssq
-        self.pktable_ept[:,7] = 2*pktable[:,3] - pktable[:,2] - 8./21*pktable[:,5] + 2./7*pktable[:,8] # b1b3
+        self.pktable_ept[:,7] = 2*pktable[:,3] - pktable[:,2] - 8./21*pktable[:,5] + 2./7*pktable[:,8] # b1b3; note that this b3 is actually 1/3 st, i.e. the term contributing to delta_m at third order
         self.pktable_ept[:,8] = self.kv**2 * self.plin # ct
         
         # linear theory table
