@@ -128,9 +128,9 @@ class REPT:
         + b2 * self.s0ktable_w[:,4] + bs * self.s0ktable_w[:,5]
             
         s2_nw = self.s2ktable_nw[:,1] + b1 * self.s2ktable_nw[:,2] + b1**2 * self.s2ktable_nw[:,3] \
-        + b2 * self.s2ktable_nw[:,4] + bs * self.s2ktable_nw[:,5] + alpha2*self.s2ktable_nw[:,6]
+        + b2 * self.s2ktable_nw[:,4] + bs * self.s2ktable_nw[:,5]
         s2_w = self.s2ktable_w[:,1] + b1 * self.s2ktable_w[:,2] + b1**2 * self.s2ktable_w[:,3] \
-        + b2 * self.s2ktable_w[:,4] + bs * self.s2ktable_w[:,5] + alpha2*self.s2ktable_w[:,6]
+        + b2 * self.s2ktable_w[:,4] + bs * self.s2ktable_w[:,5]
         
         g1_nw = self.g1ktable_nw[:,1] + b1*self.g1ktable_nw[:,2]
         g1_w  = self.g1ktable_w[:,1] + b1*self.g1ktable_w[:,2]
