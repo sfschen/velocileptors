@@ -90,6 +90,9 @@ More details can be found in Chen, Vlah & White (2020). https://arxiv.org/abs/20
 
 ---
 
+The velocileptors code was entered into the blind mock challenge.  We
+summarize the results in the figure below:
+
 ![PT challenge](pt_challenge.png)
 
 ---
