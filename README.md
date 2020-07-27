@@ -86,7 +86,8 @@ in which case the code only uses up to sigma(k), and uses a counterterm
 ansatz for the third and fourth moments.
 In this case the parameters alpha_g1, alpha_g3, alpha_k2, and s4 are not used.
 
-More details can be found in Chen, Vlah & White (2020). https://arxiv.org/abs/2005.00523
+More details can be found in Chen, Vlah & White (2020).
+https://arxiv.org/abs/2005.00523
 
 ---
 
