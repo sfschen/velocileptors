@@ -91,7 +91,7 @@ More details can be found in Chen, Vlah & White (2020). https://arxiv.org/abs/20
 ---
 
 The velocileptors code was entered into the [blind mock challenge](https://www2.yukawa.kyoto-u.ac.jp/~takahiro.nishimichi/data/PTchallenge/) described
-[here]()https://arxiv.org/abs/2003.08277.  We
+[here](https://arxiv.org/abs/2003.08277).  We
 summarize the results in the figure below:
 
 ![PT challenge](pt_challenge.png)
