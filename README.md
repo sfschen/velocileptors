@@ -90,6 +90,10 @@ More details can be found in Chen, Vlah & White (2020). https://arxiv.org/abs/20
 
 ---
 
+![PT challenge](pt_challenge.png)
+
+---
+
 This code is related to the configuration-space based code
 https://github.com/martinjameswhite/CLEFT_GSM.
 
