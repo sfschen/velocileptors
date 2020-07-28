@@ -89,7 +89,7 @@ class REPT:
     
     # Combine everything into redshift space power spectrum, all at once!
     
-    def compute_redshift_space_power_at_mu(self, pars, f, mu_obs, apar=1., aperp=1.):
+    def compute_redshift_space_power_at_mu(self, pars, f, mu_obs, apar=1., aperp=1.,bFoG=0):
         
         # Change mu to the "true" from the input observed
         # Note that kv below refers to "true" k
@@ -156,7 +156,7 @@ class REPT:
         ret -= damp_exp * damp_fac * (b1 + f*mu**2)**2 * self.plin_w
         
         # counterterms and stochastic terms
-        ret += (alpha0 + alpha2 * mu**2 + alpha4 * mu**4 + alpha6 * mu**6) * kv**2 * (self.plin_nw + damp_fac*self.plin_w)
+        ret += ( (alpha0 + alpha2 * mu**2 + alpha4 * mu**4 + alpha6 * mu**6) * kv**2 - bFoG*mu**4*kv**4*(b1+f*mu**2)**2 ) * (self.plin_nw + damp_fac*self.plin_w)
         ret += (sn + kv**2 * mu**2 * sn2 + kv**4 * mu**4 * sn4)
         
         # Interpolate onto true wavenumbers
@@ -168,7 +168,7 @@ class REPT:
         
 
 
-    def compute_redshift_space_power_multipoles(self, pars, f, ngauss=4, apar=1., aperp=1.):
+    def compute_redshift_space_power_multipoles(self, pars, f, ngauss=4, apar=1., aperp=1.,bFoG=0):
 
         # Generate the sampling
         nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
@@ -181,7 +181,7 @@ class REPT:
         self.pknutable = np.zeros((len(nus),self.nk))
         
         for ii, nu in enumerate(nus_calc):
-            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(pars,f,nu,apar=apar,aperp=aperp)[1]
+            self.pknutable[ii,:] = self.compute_redshift_space_power_at_mu(pars,f,nu,apar=apar,aperp=aperp,bFoG=bFoG)[1]
                 
         self.pknutable[ngauss:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
         

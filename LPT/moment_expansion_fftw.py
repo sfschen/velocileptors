@@ -90,7 +90,7 @@ class MomentExpansion(VelocityMoments):
                 kv, pk = self.combine_bias_terms_pk(b1,b2,bs,b3,alpha0,sn)
                 kv, vk = self.combine_bias_terms_vk(b1,b2,bs,b3,alpha2,sn2)
                 kv, s0, s2 = self.combine_bias_terms_sk(b1,b2,bs,b3,0,alpha4,0,basis='Polynomial')
-                kv, g1, g3 = self.combine_bias_terms_gk(b1,b2,b3,0,alpha6)
+                kv, g1, g3 = self.combine_bias_terms_gk(b1,b2,bs,b3,0,alpha6)
                 kv, k0, k2, k4 = self.combine_bias_terms_kk(0,sn4)
                 
             else:
@@ -99,7 +99,7 @@ class MomentExpansion(VelocityMoments):
                 kv, pk = self.combine_bias_terms_pk(b1,b2,bs,b3,alpha,sn)
                 kv, vk = self.combine_bias_terms_vk(b1,b2,bs,b3,alpha_v,sv)
                 kv, s0, s2 = self.combine_bias_terms_sk(b1,b2,bs,b3,alpha_s0,alpha_s2,sigma0_stoch,basis='Polynomial')
-                kv, g1, g3 = self.combine_bias_terms_gk(b1,b2,b3,alpha_g1,alpha_g3)
+                kv, g1, g3 = self.combine_bias_terms_gk(b1,b2,bs,b3,alpha_g1,alpha_g3)
                 kv, k0, k2, k4 = self.combine_bias_terms_kk(alpha_k2,sn4)
                 
             ret = pk - f * kv * mu2 * vk -\
