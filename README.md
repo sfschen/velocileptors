@@ -93,9 +93,9 @@ https://arxiv.org/abs/2005.00523
 
 The velocileptors code was entered into the [blind mock challenge](https://www2.yukawa.kyoto-u.ac.jp/~takahiro.nishimichi/data/PTchallenge/) described
 [here](https://arxiv.org/abs/2003.08277).  We
-summarize the results in the figure below:
+summarize the results in the figure below, where the shaded regions are errors for a 5 (Gpc/h)^3 volume with the same signal.
 
-![PT challenge](pt_challenge.png)
+![PT challenge](param_plot_desi_vol.pdf)
 
 ---
 
