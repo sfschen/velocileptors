@@ -104,8 +104,8 @@ class MomentExpansion(VelocityMoments):
                 
             ret = pk - f * kv * mu2 * vk -\
                   0.5 * f**2 * kv**2 * mu2 * ( s0 + s2* mu2 ) +\
-                  1./6 * f**3 * kv**3 * mu * (g1 + mu2 * g3) +\
-                  1./24 * f**4 * kv**4 * (k0 + mu2*k2 + mu2**2*k4)
+                  1./6 * f**3 * kv**3 * mu**3 * (g1 + mu2 * g3) +\
+                  1./24 * f**4 * kv**4 * mu**4 * (k0 + mu2*k2 + mu2**2*k4)
                   
         else:
             if reduced:
