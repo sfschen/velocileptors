@@ -18,7 +18,7 @@ class KECLEFT:
     
     '''
 
-    def __init__(self, k, p, one_loop=True, shear=False, third_order= False, cutoff=20, jn=5, N = 4000, threads=1, extrap_min = -4, extrap_max = 3, import_wisdom=False, wisdom_file='./zelda_wisdom.npy'):
+    def __init__(self, k, p, one_loop=True, shear=True, third_order= True, cutoff=20, jn=5, N = 4000, threads=1, extrap_min = -4, extrap_max = 3, import_wisdom=False, wisdom_file='./zelda_wisdom.npy'):
 
         
         self.N = N

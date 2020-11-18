@@ -11,8 +11,6 @@ class QFuncFFT:
        as well as the one-loop terms Q_n(k), R_n(k) using FFTLog.
        
        Throughout we use the ``generalized correlation function'' notation of 1603.04405.
-       
-       This is modified to take an IR scale kIR
               
        Note that one should always cut off the input power spectrum above some scale.
        I use exp(- (k/20)^2 ) but a cutoff at scales twice smaller works equivalently,
@@ -23,7 +21,7 @@ class QFuncFFT:
        the resulting speedup is unnecessary in this case.
        
     '''
-    def __init__(self, k, p, kIR = None, qv = None, oneloop = False, shear = True, third_order = True, low_ring=True):
+    def __init__(self, k, p, qv = None, oneloop = False, shear = False, low_ring=True, third_order=False):
 
         self.oneloop = oneloop
         self.shear = shear
@@ -31,13 +29,6 @@ class QFuncFFT:
         
         self.k = k
         self.p = p
-        
-        if kIR is not None:
-            self.ir_less = np.exp(- (self.k/kIR)**2 )
-            self.ir_greater = -np.expm1(- (self.k/kIR)**2)
-        else:
-            self.ir_less = 1
-            self.ir_greater = 0
 
         if qv is None:
             self.qv = np.logspace(-5,5,2e4)
@@ -45,16 +36,15 @@ class QFuncFFT:
             self.qv = qv
         
         self.sph = SphericalBesselTransform(self.k, L=5, low_ring=True, fourier=True)
-        self.sphr = SphericalBesselTransform(self.qv, L=5, low_ring=True, fourier=False)
-
         
         self.setup_xiln()
         self.setup_2pts()
         
-        if self.shear:
+        if self.shear or self.third_order:
             self.setup_shear()
         
         if self.oneloop:
+            self.sphr = SphericalBesselTransform(self.qv, L=5, low_ring=True, fourier=False)
             self.setup_QR()
             self.setup_oneloop_2pts()
             
@@ -68,13 +58,6 @@ class QFuncFFT:
         self.xi1m1 = self.xi_l_n(1,-1)
         self.xi0m2 = self.xi_l_n(0,-2, side='right') # since this approaches constant on the left only interpolate on right
         self.xi2m2 = self.xi_l_n(2,-2)
-        
-        # Also compute the IR-cut lm2's
-        self.xi0m2_lt = self.xi_l_n(0,-2, IR_cut = 'lt', side='right')
-        self.xi2m2_lt = self.xi_l_n(2,-2, IR_cut = 'lt')
-        
-        #self.xi0m2_gt = self.xi_l_n(0,-2, IR_cut = 'gt', side='right')
-        #self.xi2m2_gt = self.xi_l_n(2,-2, IR_cut = 'gt')
     
         # also compute those for one loop terms since they don't take much more time
         # also useful in shear terms
@@ -131,16 +114,6 @@ class QFuncFFT:
         # Piece together xi_l_n into what we need
         self.Xlin = 2./3 * (self.xi0m2[0] - self.xi0m2 - self.xi2m2)
         self.Ylin = 2 * self.xi2m2
-        
-        self.Xlin_lt = 2./3 * (self.xi0m2_lt[0] - self.xi0m2_lt - self.xi2m2_lt)
-        self.Ylin_lt = 2 * self.xi2m2_lt
-        
-        self.Xlin_gt = self.Xlin - self.Xlin_lt
-        self.Ylin_gt = self.Ylin - self.Ylin_lt
-        
-        #self.Xlin_gt = 2./3 * (self.xi0m2_gt[0] - self.xi0m2_gt - self.xi2m2_gt)
-        #self.Ylin_gt = 2 * self.xi2m2_gt
-        
         self.Ulin = - self.xi1m1
         self.corlin = self.xi00
     
@@ -204,9 +177,8 @@ class QFuncFFT:
         
         self.theta = self.xi_l_n(0,0, _int= self.p * self.Rb3)
         self.Ub3 = - self.xi_l_n(1,-1, _int= self.p * self.Rb3)
-        
     
-    def xi_l_n(self, l, n, _int=None, IR_cut = 'all', extrap=False, qmin=1e-3, qmax=1000, side='both'):
+    def xi_l_n(self, l, n, _int=None, extrap=False, qmin=1e-3, qmax=1000, side='both'):
         '''
         Calculates the generalized correlation function xi_l_n, which is xi when l = n = 0
         
@@ -216,12 +188,6 @@ class QFuncFFT:
             integrand = self.p * self.k**n
         else:
             integrand = _int * self.k**n
-        
-        if IR_cut is not 'all':
-            if IR_cut == 'gt':
-                integrand *= self.ir_greater
-            elif IR_cut == 'lt':
-                integrand *= self.ir_less
         
         qs, xint =  self.sph.sph(l,integrand)
 
