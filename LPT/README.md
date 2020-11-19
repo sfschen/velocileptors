@@ -29,8 +29,11 @@ correlation functions using the Gaussian streaming model.
 (3) fourier_streaming_model_fftw.py: this computes redshift-space
 power spectra using the Fourier streaming model. 
 
-All the models use velocity spectra from velocity_moments_fftw.py,
-which itself inherits the real-space power spectrum module cleft_fftw.py.
+(4) lpt_rsd_fftw.py: this computes the power spectrum in redshift space via direct Lagrangian expansion.
+
+All the models except (4) use velocity spectra from velocity_moments_fftw.py,
+which itself inherits the real-space power spectrum module cleft_fftw.py. The model
+in (4) is described in arXiv:XXXX.
 
 
 
@@ -47,12 +50,14 @@ where
 
 (3) sn, sn2: stochastic contributions to P_real(k) and sigma^2
     [e.g. shot-noise and finger-of-god dispersion].
-
+ 
 ---
 
-If you want to go beyond the Gaussian approximation then you need to
-additionally specify an alpha6 counterterm parameter and an sn4
-stochastic term.
+If the beyond_gauss setting is True in (1)-(3) or if using (4), then the parameters are instead
+
+pars = [b1,b2,bs,b3] +  [alpha0,alpha2,alpha4,alpha6] +  [sn,sn2,sn4]
+
+However, for most purposes the extra parameters can be set to zero with little effect.
 
 ---
 
