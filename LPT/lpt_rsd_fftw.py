@@ -463,7 +463,7 @@ class LPT_RSD:
         L2 = np.polynomial.legendre.Legendre((0,0,1))(nus)
         L4 = np.polynomial.legendre.Legendre((0,0,0,0,1))(nus)
         
-        self.pknutable = np.zeros((len(nus),nk,self.num_power_components+2)) # counterterms have distinct nu structure
+        self.pknutable = np.zeros((len(nus),nk,self.num_power_components+3)) # counterterms have distinct nu structure
         kv = np.logspace(np.log10(kmin), np.log10(kmax), nk)
         
         # To implement AP:
@@ -483,10 +483,11 @@ class LPT_RSD:
             
             for jj, k in enumerate(kv):
                 pterms = self.p_integrals(k_apfac * k,nmax=nmax)
-                self.pknutable[ii,jj,:-3] = pterms[:-1]
-                self.pknutable[ii,jj,-3] = k**2 * pterms[-1]
-                self.pknutable[ii,jj,-2] = k**2 * nu**2 * pterms[-1]
-                self.pknutable[ii,jj,-1] = k**2 * nu**4 * pterms[-1]
+                self.pknutable[ii,jj,:-4] = pterms[:-1]
+                self.pknutable[ii,jj,-4] = k**2 * pterms[-1]
+                self.pknutable[ii,jj,-3] = k**2 * nu**2 * pterms[-1]
+                self.pknutable[ii,jj,-2] = k**2 * nu**4 * pterms[-1]
+                self.pknutable[ii,jj,-1] = k**2 * nu**6 * pterms[-1]
         
         self.pknutable[ngauss:,:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
         
@@ -504,7 +505,7 @@ class LPT_RSD:
         Returns k, pknu.
         '''
 
-        b1,b2,bs,b3,alpha0,alpha2,alpha4,sn,sn2 = bvec
+        b1,b2,bs,b3,alpha0,alpha2,alpha4,alpha6, sn,sn2,sn4 = bvec
         bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2, bs, b1*bs, b2*bs, bs**2, b3, b1*b3])
         
         try:
@@ -516,7 +517,9 @@ class LPT_RSD:
         kv = pknu[:,0]; za = pknu[:,-1]
         pktemp = np.copy(pknu)[:,1:-1]
                     
-        res = np.sum(pktemp * bias_monomials,axis=1) + (alpha0 + alpha2*nu**2 + alpha4*nu**4) * kv**2 * za + sn + sn2 * kv**2*nu**2
+        res = np.sum(pktemp * bias_monomials,axis=1)\
+              + (alpha0 + alpha2*nu**2 + alpha4*nu**4 + alpha6*nu**4) * kv**2 * za\
+            + sn + sn2 * kv**2*nu**2 + sn4 * kv**4 * nu**4
                     
         return kv, res
         
@@ -529,14 +532,14 @@ class LPT_RSD:
         '''
     
     
-        b1,b2,bs,b3,alpha0,alpha2,alpha4,sn,sn2 = bvec
-        bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2, bs, b1*bs, b2*bs, bs**2, b3, b1*b3, alpha0, alpha2, alpha4])
+        b1,b2,bs,b3,alpha0,alpha2,alpha4,alpha6,sn,sn2,sn4 = bvec
+        bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2, bs, b1*bs, b2*bs, bs**2, b3, b1*b3, alpha0, alpha2, alpha4,alpha6])
 
         try:
             kv = self.kv
-            p0 = np.sum(self.p0ktable * bias_monomials,axis=1) + sn + 1./3 * kv**2
-            p2 = np.sum(self.p2ktable * bias_monomials,axis=1) + 2 * kv**2 * sn2 / 3
-            p4 = np.sum(self.p4ktable * bias_monomials,axis=1)
+            p0 = np.sum(self.p0ktable * bias_monomials,axis=1) + sn + 1./3 * kv**2 * sn2 + 1./5 * kv**4 * sn4
+            p2 = np.sum(self.p2ktable * bias_monomials,axis=1) + 2 * kv**2 * sn2 / 3 + 4./7 * kv**4 * sn4
+            p4 = np.sum(self.p4ktable * bias_monomials,axis=1) + 8./35 * kv**4 * sn4
             return kv, p0, p2, p4
         except:
             print("First generate multipole table with make_pltable.")

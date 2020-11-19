@@ -91,6 +91,24 @@ https://arxiv.org/abs/2005.00523
 
 ---
 
+In addition to the above there are two "direct expansion" modules available in LPT and EPT. These are LPT.lpt_rsd_fftw and EPT.ept_fullresum_fftw. The former is described in arXiv:XXXX while the latter is described in the original velocileptors paper cited aboved. Both these models take the full bias vector
+
+pars = [b1, b2, bs, b3] +  [alpha0, alpha2, alpha4, alpha6] +  [sn, sn2, sn4]
+
+The LPT module has to be called slightly differently compared to the other ones because the angular dependence of the underlying IR resummation requires recomputing the PT integrals at each mu. For example the multipoles can be computed as:
+
+```
+from LPT.lpt_rsd_fftw import LPT_RSD
+lpt = LPT_RSD(klin,plin,kIR=0.2)
+
+lpt.make_pltable(f,nmax=4,apar=1,aperp=1)
+kl,p0,p2,p4 = lpt.combine_bias_terms_pkell(pars)
+```
+
+Further calls, for example for wedges P(k,mu), can be found in the example notebooks.
+
+---
+
 The velocileptors code was entered into the [blind mock challenge](https://www2.yukawa.kyoto-u.ac.jp/~takahiro.nishimichi/data/PTchallenge/) described
 [here](https://arxiv.org/abs/2003.08277).  We
 summarize the results in the figure below, where the shaded regions are errors for a 5 (Gpc/h)^3 volume with the same signal.
