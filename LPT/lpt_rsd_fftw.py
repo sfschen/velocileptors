@@ -18,7 +18,7 @@ class LPT_RSD:
         Throughout this code we refer to mu_q as "mu" and mu = n.k as "nu."
     '''
 
-    def __init__(self, k, p, third_order = True, shear=True, oneloop=True,\
+    def __init__(self, k, p, third_order = True, shear=True, one_loop=True,\
                  kIR = None, cutoff=10, jn=5, N = 2000, threads=1, extrap_min = -5, extrap_max = 3):
 
         self.N = N
@@ -32,7 +32,7 @@ class LPT_RSD:
         
         self.third_order = third_order
         self.shear = shear or third_order
-        self.one_loop = oneloop
+        self.one_loop = one_loop
         
         self.k = k
         self.p = p
