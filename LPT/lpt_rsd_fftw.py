@@ -689,7 +689,7 @@ class LPT_RSD:
         
         return kv, pknu
         
-    def make_pell_fixebias(self, f, bvec, apar = 1, aperp = 1, ngauss=4, kmin = 1e-2, kmax = 0.25, nk = 50,nmax=5):
+    def make_pell_fixedbias(self, f, bvec, apar = 1, aperp = 1, ngauss=4, kmin = 1e-2, kmax = 0.25, nk = 50,nmax=5):
         
         nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
         nus_calc = nus[0:ngauss]
@@ -729,9 +729,9 @@ class LPT_RSD:
         
         return kv, p0k, p2k, p4k
         
-    def make_xiell_fixebias(self, f, bvec, apar = 1, aperp = 1, ngauss=4, kmin = 1e-3, kmax = 0.8, nk = 100, nmax=5):
+    def make_xiell_fixedbias(self, f, bvec, apar = 1, aperp = 1, ngauss=4, kmin = 1e-3, kmax = 0.8, nk = 100, nmax=5):
 
-        kv, p0k, p2k, p4k = self.make_pell_fixebias(f, bvec, apar=apar, aperp=aperp, ngauss=ngauss, kmin = kmin, kmax= kmax, nk = nk, nmax=nmax)
+        kv, p0k, p2k, p4k = self.make_pell_fixedbias(f, bvec, apar=apar, aperp=aperp, ngauss=ngauss, kmin = kmin, kmax= kmax, nk = nk, nmax=nmax)
         
         damping = np.exp(-(self.kint/10)**2)
         p0int = loginterp(kv, p0k)(self.kint) * damping
