@@ -729,11 +729,11 @@ class LPT_RSD:
         
         return kv, p0k, p2k, p4k
         
-    def make_xiell_fixebias(self, f, bvec, apar = 1, aperp = 1, ngauss=4, kmin = 1e-3, kmax = 0.5, nk = 100, nmax=5):
+    def make_xiell_fixebias(self, f, bvec, apar = 1, aperp = 1, ngauss=4, kmin = 1e-3, kmax = 0.8, nk = 100, nmax=5):
 
-        kv, p0k, p2k, p4k = self.make_pell_fixebias(f, bvec, ngauss=ngauss, kmin = kmin, kmax= kmax, nk = nk, nmax=nmax)
+        kv, p0k, p2k, p4k = self.make_pell_fixebias(f, bvec, apar=apar, aperp=aperp, ngauss=ngauss, kmin = kmin, kmax= kmax, nk = nk, nmax=nmax)
         
-        damping = np.exp(-(self.kint/20)**2)
+        damping = np.exp(-(self.kint/10)**2)
         p0int = loginterp(kv, p0k)(self.kint) * damping
         p2int = loginterp(kv, p2k)(self.kint) * damping
         p4int = loginterp(kv, p4k)(self.kint) * damping
