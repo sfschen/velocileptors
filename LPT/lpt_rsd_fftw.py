@@ -523,7 +523,7 @@ class LPT_RSD:
         pktemp = np.copy(pknu)[:,1:-1]
                     
         res = np.sum(pktemp * bias_monomials,axis=1)\
-              + (alpha0 + alpha2*nu**2 + alpha4*nu**4 + alpha6*nu**4) * kv**2 * za\
+              + (alpha0 + alpha2*nu**2 + alpha4*nu**4 + alpha6*nu**6) * kv**2 * za\
             + sn + sn2 * kv**2*nu**2 + sn4 * kv**4 * nu**4
                     
         return kv, res
