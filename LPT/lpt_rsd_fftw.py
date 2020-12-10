@@ -5,6 +5,9 @@ from scipy.special import hyp2f1, gamma
 from scipy.interpolate import interp1d
 
 from Utils.spherical_bessel_transform_fftw import SphericalBesselTransform
+from Utils.spherical_bessel_transform import SphericalBesselTransform as SphericalBesselTransformNP
+from Utils.loginterp import loginterp
+
 from Utils.qfuncfft import QFuncFFT
 
 
@@ -51,8 +54,10 @@ class LPT_RSD:
         self.jn = jn
         self.threads = threads
         self.sph = SphericalBesselTransform(self.qint, L=self.jn, ncol=self.num_power_components, threads=self.threads)
-    
+        self.sph1 = SphericalBesselTransform(self.qint, L=self.jn, ncol=1, threads=self.threads)
+        self.sphr = SphericalBesselTransformNP(self.kint,L=5,fourier=True)
 
+    
     def setup_powerspectrum(self):
     
         # This sets up terms up to one loop in the combination (symmetry factors) they appear in pk
@@ -431,7 +436,7 @@ class LPT_RSD:
             ret += interp1d(ktemps, bias_ffts)(k)
 
         return 4*suppress*np.pi*ret
-
+        
 
     def make_ptable(self, f, nu, kmin = 1e-2, kmax = 0.25, nk = 50,nmax=5):
     
@@ -544,4 +549,198 @@ class LPT_RSD:
         except:
             print("First generate multipole table with make_pltable.")
             
+            
+            
+
+    ### Alternative functions to first combine bias terms, then compute power spectrum
+    ### This set of functions currently assumes nonzero bs and b3
+    
+    
+    def p_integral_fixedbias(self, k, bvec, nmax=8):
         
+        b1,b2,bs,b3,alpha0,alpha2,alpha4,alpha6,sn,sn2,sn4 = bvec
+        bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2, bs, b1*bs, b2*bs, bs**2, b3, b1*b3])
+        
+        ksq = k**2
+        Kfac = self.Kfac
+        f = self.f
+        nu = self.nu
+        Anu, Bnu = self.Anu, self.Bnu
+        
+        K = k*self.Kfac; Ksq = K**2
+        Knfac = nu*(1+f)
+        
+        D2 = self.D**2; D4 = D2**2
+
+        expon = np.exp(-0.5*Ksq * D2* (self.XYlin - self.sigma))
+        exponm1 = np.expm1(-0.5*Ksq * D2* (self.XYlin - self.sigma))
+        suppress = np.exp(-0.5*Ksq * D2* self.sigma)
+            
+            
+        A = k*self.qint*self.c
+        C = k*self.qint*self.s
+        
+        
+        G0s =  [self._G0_l(ii,k,nmax=nmax)    for ii in range(self.jn)] + [0] + [0] + [0] + [0]
+        dGdAs =  [self._dG0dA_l(ii,k,nmax=nmax) for ii in range(self.jn)] + [0] + [0] + [0]
+        dGdCs = [self._dG0dC_l(ii,k,nmax=nmax) for ii in range(self.jn)] + [0] + [0] + [0]
+        d2GdA2s = [self._d2G0dA2_l(ii,k,nmax=nmax) for ii in range(self.jn)] + [0] + [0]
+        d2GdCdAs = [self._d2G0dCdA_l(ii,k,nmax=nmax) for ii in range(self.jn) ] + [0] + [0]
+        d2GdC2s = [self._d2G0dC2_l(ii,k,nmax=nmax) for ii in range(self.jn) ] + [0] + [0]
+        d3GdA3s = [self._d3G0dA3_l(ii,k,nmax=nmax) for ii in range(self.jn) ] + [0]
+        d3GdCdA2s = [self._d3G0dCdA2_l(ii,k,nmax=nmax) for ii in range(self.jn) ] + [0]
+        d4GdA4s = [self._d4G0dA4_l(ii,k,nmax=nmax) for ii in range(self.jn) ]
+                
+        G01s = [-(dGdAs[ii] + 0.5*A*G0s[ii-1])   for ii in range(self.jn)]
+        G02s = [-(d2GdA2s[ii] + A * dGdAs[ii-1] + 0.5*G0s[ii-1] + 0.25 * A**2 *G0s[ii-2]) for ii in range(self.jn)]
+        G03s = [d3GdA3s[ii] + 1.5*A*d2GdA2s[ii-1] + 1.5*dGdAs[ii-1] \
+                 + 0.75*A**2*dGdAs[ii-2] + 0.75*A*G0s[ii-2] + A**3/8.*G0s[ii-3] for ii in range(self.jn)]
+        G04s = [d4GdA4s[ii] + 2*A*d3GdA3s[ii-1] + 3*d2GdA2s[ii-1] \
+                + 1.5*A**2*d2GdA2s[ii-2] + 3*A*dGdAs[ii-2] + 0.75*G0s[ii-2]\
+                + 0.5*A**3*dGdAs[ii-3] + 0.75*A**2*G0s[ii-3]\
+                + A**4/16. * G0s[ii-4] for ii in range(self.jn)]
+                 
+        G10s = [ dGdCs[ii] + 0.5*C*G0s[ii-1]  for ii in range(self.jn)]
+        
+        G11s = [ d2GdCdAs[ii] + 0.5*C*dGdAs[ii-1] + 0.5*A*dGdCs[ii-1] + 0.25*A*C*G0s[ii-2] for ii in range(self.jn)]
+        G20s = [-(d2GdC2s[ii] + C * dGdCs[ii-1] + 0.5*G0s[ii-1] + 0.25 * C**2 *G0s[ii-2]) for ii in range(self.jn)]
+        G12s = [-(d3GdCdA2s[ii] + 0.5*C*d2GdA2s[ii-1] + A*d2GdCdAs[ii-1] + 0.5*dGdCs[ii-1]\
+                  + 0.5*A*C*dGdAs[ii-2] + 0.25*A**2*dGdCs[ii-2] + 0.25*C*G0s[ii-2] + A**2*C/8*G0s[ii-3])  for ii in range(self.jn)]
+
+        ret = 0
+        bias_integrands = np.zeros( (self.num_power_components,self.N)  )
+        bias_integrand  = np.zeros(self.N)
+                            
+        for l in range(self.jn):
+            
+            mu0 = G0s[l]
+            nq1 = self.Anu * G01s[l] + self.Bnu * G10s[l]
+            mu_nq1 = self.Anu * G02s[l] + self.Bnu * G11s[l]
+            nq2 = self.Anu**2 * G02s[l] + 2 * self.Anu * self.Bnu * G11s[l] + self.Bnu**2 * self.Bnu**2 * G20s[l]
+            mu1 = G01s[l]
+            mu2 = G02s[l]
+            mu3 = G03s[l]
+            mu2_nq1 = self.Anu * G03s[l] + self.Bnu * G12s[l]
+            mu4 = G04s[l]
+            
+            bias_integrands[0,:] = 1 * G0s[l] - 0.5 * Ksq * (self.Xlin_gt * G0s[l] + self.Ylin_gt * mu2) # za
+            
+            bias_integrands[0,:] += -0.5 * ksq * ( 2*(Kfac**2 + 2*f*(1+f)*nu**2) * G0s[l] * self.X13 +\
+                                                  2*(Kfac**2*mu2 + 2*f*Kfac*nu*mu_nq1) * self.Y13 +\
+                                                   (Kfac**2 + 2*f*(1+f)*nu**2 + f**2*nu**2) * G0s[l] * self.X22 +\
+                                                   (Kfac**2*mu2 + 2*f*Kfac*nu*mu_nq1 + f**2*nu**2*nq2) * self.Y22)\
+                                 + Ksq**2 / 8. * (self.Xlin_gt**2 * G0s[l] + 2*self.Xlin_gt*self.Ylin_gt*mu2 + self.Ylin_gt**2 * mu4)# Aloop
+
+                                            
+            bias_integrands[0,:] += 0.5*k**3 * ( 2*Kfac*(Kfac**2+f*(1+f)*nu**2) * G01s[l] * self.V1 +  \
+                                                Kfac**2 * (Kfac*G01s[l] + f*nu*nq1) * self.V3 + \
+                                                Kfac**2 * (Kfac*G03s[l] + f*nu*mu2_nq1) * self.T)
+                                                
+            bias_integrands[1,:] = -2 * K * (self.Ulin + self.U3) * mu1 - Ksq * (self.X10 * mu0 + self.Y10 * mu2 ) \
+                                   -4*f*k*nu*self.U3*nq1 - f*ksq*nu*(self.X10 * Knfac * mu0 + Kfac * self.Y10 * mu_nq1)\
+                                   -2 * K * self.Ulin * ( -0.5*Ksq*(self.Xlin_gt*mu1 + self.Ylin_gt*mu3) )
+                                   
+            bias_integrands[2,:] = self.corlin * (mu0 - 0.5*Ksq*(self.Xlin_gt*mu0 + self.Ylin_gt*mu2) )\
+                                   - Ksq*self.Ulin**2*mu2 - k*(Kfac*mu1 + f*k*nu*nq1)*self.U11
+                                   
+                                   
+            bias_integrands[3,:] = - Ksq * self.Ulin**2 * mu2 - k*(Kfac*mu1 + f*nu*nq1)*self.U20 # b2
+            bias_integrands[4,:] = -2 * K * self.Ulin * self.corlin * mu1 # b1b2
+            bias_integrands[5,:] = 0.5 * self.corlin**2 * mu0 # b2sq
+            
+            if self.shear or self.third_order:
+                bias_integrands[6,:] = - Ksq * (self.Xs2 * mu0 + self.Ys2 * mu2) - 2*k*(Kfac*mu1 + f*nu*nq1)*self.Us2 # bs should be both minus
+                bias_integrands[7,:] = -2*K*self.V * mu1 # b1bs
+                bias_integrands[8,:] = self.chi * mu0 # b2bs
+                bias_integrands[9,:] = self.zeta * mu0 # bssq
+                
+            if self.third_order:
+                bias_integrands[10,:] = -2 * K * self.Ub3 * mu1 #b3
+                bias_integrands[11,:] = 2 * self.theta * mu0 #b1 b3
+                
+            bias_integrands[-1,:] = 1 * G0s[l] - 0.5 * Ksq * (self.Xlin_gt * G0s[l] + self.Ylin_gt * mu2) # za
+            
+            # sum up bias terms, treating counterterms separately
+            bias_integrand  = np.sum( bias_monomials[:,None]*bias_integrands[:-1,:],axis=0 )
+            bias_integrand += k**2 * (alpha0 + alpha2*nu**2 + alpha4*nu**4 + alpha6*nu**6) * bias_integrands[-1,:]
+            
+            # multiply by IR exponent
+            if l == 0:
+                bias_integrand = bias_integrand * expon * (-2./k/self.qint)**l
+                bias_integrand -= bias_integrand[-1]
+            else:
+                bias_integrand = bias_integrand * expon * (-2./k/self.qint)**l
+                                                                
+            # do FFTLog
+            ktemps, bias_fft = self.sph1.sph(l, bias_integrand)
+            ret += interp1d(ktemps, bias_fft)(k)
+
+        return 4*suppress*np.pi*ret + sn + k**2 * nu**2 * sn2 + k**4 * nu**4 * sn4
+        
+    def make_pknu_fixedbias(self, f, nu, bvec, kmin = 1e-2, kmax = 0.25, nk = 50,nmax=5):
+    
+        self.setup_rsd_facs(f,nu,nmax=nmax)
+        
+        pknu= np.zeros(nk) # one column for ks
+        kv = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+
+        for foo in range(nk):
+            pknu[foo] = self.p_integral_fixedbias(kv[foo],bvec,nmax=nmax)
+        
+        return kv, pknu
+        
+    def make_pell_fixebias(self, f, bvec, apar = 1, aperp = 1, ngauss=4, kmin = 1e-2, kmax = 0.25, nk = 50,nmax=5):
+        
+        nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
+        nus_calc = nus[0:ngauss]
+        
+        L0 = np.polynomial.legendre.Legendre((1))(nus)
+        L2 = np.polynomial.legendre.Legendre((0,0,1))(nus)
+        L4 = np.polynomial.legendre.Legendre((0,0,0,0,1))(nus)
+        
+        pknutable = np.zeros((len(nus),nk)) # counterterms have distinct nu structure
+        kv = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+        
+        # To implement AP:
+        # Calculate P(k,nu) at the true coordinates, given by
+        # k_true = k_apfac * kobs
+        # nu_true = nu * a_perp/a_par/fac
+        # Note that the integration grid on the other hand is never observed
+        
+        for ii, nu in enumerate(nus_calc):
+        
+            fac = np.sqrt(1 + nu**2 * ((aperp/apar)**2-1))
+            k_apfac = fac / aperp
+            nu_true = nu * aperp/apar/fac
+            vol_fac = apar * aperp**2
+        
+            self.setup_rsd_facs(f,nu_true)
+            
+            for jj, k in enumerate(kv):
+                pknutable[ii,jj] = self.p_integral_fixedbias(k_apfac*k, bvec, nmax=nmax)
+ 
+        
+        pknutable[ngauss:,:] = np.flip(pknutable[0:ngauss],axis=0)
+        
+
+        p0k = 0.5 * np.sum((ws*L0)[:,None]*pknutable,axis=0) / vol_fac
+        p2k = 2.5 * np.sum((ws*L2)[:,None]*pknutable,axis=0) / vol_fac
+        p4k = 4.5 * np.sum((ws*L4)[:,None]*pknutable,axis=0) / vol_fac
+        
+        return kv, p0k, p2k, p4k
+        
+    def make_xiell_fixebias(self, f, bvec, apar = 1, aperp = 1, ngauss=4, kmin = 1e-3, kmax = 0.5, nk = 100, nmax=5):
+
+        kv, p0k, p2k, p4k = self.make_pell_fixebias(f, bvec, ngauss=ngauss, kmin = kmin, kmax= kmax, nk = nk, nmax=nmax)
+        
+        damping = np.exp(-(self.kint/20)**2)
+        p0int = loginterp(kv, p0k)(self.kint) * damping
+        p2int = loginterp(kv, p2k)(self.kint) * damping
+        p4int = loginterp(kv, p4k)(self.kint) * damping
+        
+        ss0, xi0 = self.sphr.sph(0,p0int)
+        ss2, xi2 = self.sphr.sph(2,p2int); xi2 *= -1
+        ss4, xi4 = self.sphr.sph(4,p0int)
+        
+        return (ss0, xi0), (ss2, xi2), (ss4, xi4)
+      
