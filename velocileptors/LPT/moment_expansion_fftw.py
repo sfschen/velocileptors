@@ -1,8 +1,8 @@
 import numpy as np
 from scipy.interpolate import interp1d
 
-from Utils.loginterp import loginterp
-from LPT.velocity_moments_fftw import VelocityMoments
+from velocileptors.Utils.loginterp import loginterp
+from velocileptors.LPT.velocity_moments_fftw import VelocityMoments
 
 
 
