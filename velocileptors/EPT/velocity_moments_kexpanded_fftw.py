@@ -4,9 +4,9 @@ import time
 
 from scipy.interpolate import interp1d
 
-from Utils.spherical_bessel_transform_fftw import SphericalBesselTransform
+from velocileptors.Utils.spherical_bessel_transform_fftw import SphericalBesselTransform
 
-from EPT.cleft_kexpanded_fftw import KECLEFT
+from velocileptors.EPT.cleft_kexpanded_fftw import KECLEFT
 
 class KEVelocityMoments(KECLEFT):
     '''

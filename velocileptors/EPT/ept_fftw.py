@@ -1,7 +1,7 @@
 import numpy as np
 
-from Utils.loginterp import loginterp
-from EPT.velocity_moments_kexpanded_fftw import KEVelocityMoments
+from velocileptors.Utils.loginterp import loginterp
+from velocileptors.EPT.velocity_moments_kexpanded_fftw import KEVelocityMoments
 
 class EPT(KEVelocityMoments):
 

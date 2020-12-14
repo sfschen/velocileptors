@@ -4,8 +4,8 @@ from scipy.signal import savgol_filter
 from scipy.interpolate import interp1d
 
 
-from Utils.loginterp import loginterp
-from EPT.ept_fftw import EPT
+from velocileptors.Utils.loginterp import loginterp
+from velocileptors.EPT.ept_fftw import EPT
 
 class MomentExpansion:
 
