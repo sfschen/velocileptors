@@ -1,14 +1,14 @@
 import numpy as np
-from Utils.loginterp import loginterp
+from velocileptors.Utils.loginterp import loginterp
 
 from scipy.special import hyp2f1, gamma
 from scipy.interpolate import interp1d
 
-from Utils.spherical_bessel_transform_fftw import SphericalBesselTransform
-from Utils.spherical_bessel_transform import SphericalBesselTransform as SphericalBesselTransformNP
-from Utils.loginterp import loginterp
+from velocileptors.Utils.spherical_bessel_transform_fftw import SphericalBesselTransform
+from velocileptors.Utils.spherical_bessel_transform import SphericalBesselTransform as SphericalBesselTransformNP
+from velocileptors.Utils.loginterp import loginterp
 
-from Utils.qfuncfft import QFuncFFT
+from velocileptors.Utils.qfuncfft import QFuncFFT
 
 
 

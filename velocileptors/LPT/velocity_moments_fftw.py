@@ -5,11 +5,12 @@ import time
 
 from scipy.interpolate import interp1d
 
-from Utils.loginterp import loginterp
-from Utils.spherical_bessel_transform_fftw import SphericalBesselTransform
-from Utils.qfuncfft import QFuncFFT
+from velocileptors.Utils.loginterp import loginterp
+from velocileptors.Utils.spherical_bessel_transform_fftw import SphericalBesselTransform
+from velocileptors.Utils.qfuncfft import QFuncFFT
 
-from LPT.cleft_fftw import CLEFT
+from velocileptors.LPT.cleft_fftw import CLEFT
+
 
 class VelocityMoments(CLEFT):
     '''
