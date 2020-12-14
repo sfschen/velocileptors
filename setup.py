@@ -12,7 +12,9 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/sfschen/velocileptors",
-    packages=['velocileptors','velocileptors/LPT'],  #setuptools.find_packages(),
+    packages=['velocileptors','velocileptors/Utils',\
+              'velocileptors/LPT','velocileptors/EPT'],
+             #setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
