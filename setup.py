@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="velocileptors-sfschen",
+    name="velocileptors",
     version="1.0",
     author="Stephen Chen",
     author_email="shifan_chen@berkeley.edu",
@@ -19,4 +19,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
+    install_requires=['numpy','scipy'],
 )
