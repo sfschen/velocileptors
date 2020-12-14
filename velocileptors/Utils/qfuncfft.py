@@ -1,7 +1,7 @@
 import numpy as np
 
-from Utils.loginterp import loginterp
-from Utils.spherical_bessel_transform import SphericalBesselTransform
+from velocileptors.Utils.loginterp import loginterp
+from velocileptors.Utils.spherical_bessel_transform import SphericalBesselTransform
 
 
 
