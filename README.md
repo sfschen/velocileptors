@@ -97,7 +97,11 @@ https://arxiv.org/abs/2012.04636
 
 ---
 
-In addition to the above there are two "direct expansion" modules available in LPT and EPT. These are LPT.lpt_rsd_fftw and EPT.ept_fullresum_fftw. The former is described in arXiv:XXXX while the latter is described in the original velocileptors paper cited aboved. Both these models take the full bias vector
+In addition to the above there are two "direct expansion"
+modules available in LPT and EPT. These are LPT.lpt_rsd_fftw
+and EPT.ept_fullresum_fftw. The former is described in arXiv:2012.04636
+while the latter is described in the original velocileptors paper
+(arXiv:2005.00523). Both these models take the full bias vector
 
 pars = [b1, b2, bs, b3] +  [alpha0, alpha2, alpha4, alpha6] +  [sn, sn2, sn4]
 
