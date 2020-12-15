@@ -108,7 +108,7 @@ pars = [b1, b2, bs, b3] +  [alpha0, alpha2, alpha4, alpha6] +  [sn, sn2, sn4]
 The LPT module has to be called slightly differently compared to the other ones because the angular dependence of the underlying IR resummation requires recomputing the PT integrals at each mu. For example the multipoles can be computed as:
 
 ```
-from LPT.lpt_rsd_fftw import LPT_RSD
+from velocileptors.LPT.lpt_rsd_fftw import LPT_RSD
 lpt = LPT_RSD(klin,plin,kIR=0.2)
 
 lpt.make_pltable(f,nmax=4,apar=1,aperp=1)
