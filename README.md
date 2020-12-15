@@ -9,7 +9,7 @@ correlation functions of biased tracers using 1-loop perturbation
 theory (with effective field theory counter terms and up to cubic
 biasing) as well as the real-space pairwise velocity moments.
 
-The can be installed with
+The code can be installed with
 
 python3 -m pip install -v git+https://github.com/sfschen/velocileptors
 
