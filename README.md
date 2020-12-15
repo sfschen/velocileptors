@@ -9,7 +9,11 @@ correlation functions of biased tracers using 1-loop perturbation
 theory (with effective field theory counter terms and up to cubic
 biasing) as well as the real-space pairwise velocity moments.
 
-The code requires numpy, scipy and pyFFTW (the python wrapper for FFTW):
+The can be installed with
+
+python3 -m pip install -v git+https://github.com/sfschen/velocileptors
+
+It requires numpy, scipy and pyFFTW (the python wrapper for FFTW):
 
 https://hgomersall.github.io/pyFFTW/
 
@@ -29,7 +33,7 @@ For most situations computing the power spectrum wedges or multipoles
 is as simple as:
 
 ```
-from LPT.moment_expansion_fftw import MomentExpansion
+from velocileptors.LPT.moment_expansion_fftw import MomentExpansion
 
 mome        = MomentExpansion(klin,pklin,threads=nthreads)
 kw,pkw      = mome.compute_redshift_space_power_at_mu(pars,f,mu,reduced=True)
@@ -86,8 +90,10 @@ in which case the code only uses up to sigma(k), and uses a counterterm
 ansatz for the third and fourth moments.
 In this case the parameters alpha_g1, alpha_g3, alpha_k2, and s4 are not used.
 
-More details can be found in Chen, Vlah & White (2020).
+More details can be found in Chen, Vlah & White (2020),
 https://arxiv.org/abs/2005.00523
+and Chen, Vlah, Castorina & White (2020),
+https://arxiv.org/abs/2012.04636
 
 ---
 
