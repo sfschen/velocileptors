@@ -261,7 +261,7 @@ class KECLEFT:
         for ii in range(self.num_power_components):
             self.pktable[:, ii+1] = interp1d(self.kint,\
                                              D**2 * self.p_linear[ii,:] \
-                                            + nonlinear * D**4 * (self.p_connected[ii,:] + self.p_k0[ii,:] \
+                                             + nonlinear * D**4 * (self.p_connected[ii,:] + self.p_k0[ii,:] \
                                             + self.kint * self.p_k1[ii,:] + self.kint**2 * self.p_k2[ii,:]\
                                             + self.kint**3 * self.p_k3[ii,:] + self.kint**4 * self.p_k4[ii,:]) )(kv)
             

@@ -26,12 +26,12 @@ def loginterp(x, y, yint = None, side = "both", lorder = 9, rorder = 9, lp = 1, 
     if np.sign(y[lp]) == np.sign(y[lp-1]) and np.sign(y[lp]) == np.sign(y[lp+1]):
         l = lp
     else:
-        l = lp + 1
+        l = lp + 2
         
     if np.sign(y[rp]) == np.sign(y[rp-1]) and np.sign(y[rp]) == np.sign(y[rp+1]):
         r = rp
     else:
-        r = rp - 1
+        r = rp - 2
     
     lneff = derivative(yint, x[l], dx = x[l]*ldx, order = lorder)*x[l]/y[l]
     rneff = derivative(yint, x[r], dx = x[r]*rdx, order = rorder)*x[r]/y[r]
