@@ -443,11 +443,17 @@ class LPT_RSD:
         return 4*suppress*np.pi*ret
         
 
-    def make_ptable(self, f, nu, kmin = 1e-2, kmax = 0.25, nk = 50,nmax=5):
+    def make_ptable(self, f, nu, kv = None, kmin = 1e-2, kmax = 0.25, nk = 50,nmax=5):
     
         self.setup_rsd_facs(f,nu,nmax=nmax)
+        
+        if kv is None:
+            kv = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+        else:
+            nk = len(kv)
+            
         self.pktable = np.zeros([nk, self.num_power_components+1]) # one column for ks
-        kv = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+        
         self.pktable[:, 0] = kv[:]
         for foo in range(nk):
             self.pktable[foo, 1:] = self.p_integrals(kv[foo],nmax=nmax)
@@ -458,7 +464,7 @@ class LPT_RSD:
 
 
 
-    def make_pltable(self,f, apar = 1, aperp = 1, ngauss = 3, kmin = 1e-2, kmax = 0.25, nk = 50, nmax=8):
+    def make_pltable(self,f, apar = 1, aperp = 1, ngauss = 3, kv = None, kmin = 1e-2, kmax = 0.25, nk = 50, nmax=8):
         '''
         Make a table of the monopole and quadrupole in k space.
         Uses gauss legendre integration.
@@ -473,8 +479,15 @@ class LPT_RSD:
         L2 = np.polynomial.legendre.Legendre((0,0,1))(nus)
         L4 = np.polynomial.legendre.Legendre((0,0,0,0,1))(nus)
         
-        self.pknutable = np.zeros((len(nus),nk,self.num_power_components+3)) # counterterms have distinct nu structure
-        kv = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+        #self.pknutable = np.zeros((len(nus),nk,self.num_power_components+3)) # counterterms have distinct nu structure
+        # counterterms + stoch terms have distinct nu structure and have to be added here
+        # e.g. k^2 mu^2 is not the same as k_obs^2 mu_obs^2!
+        if kv is None:
+            kv = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+        else:
+            nk = len(kv)
+        self.pknutable = np.zeros((len(nus),nk,self.num_power_components+6)) 
+        
         
         # To implement AP:
         # Calculate P(k,nu) at the true coordinates, given by
@@ -492,12 +505,28 @@ class LPT_RSD:
             self.setup_rsd_facs(f,nu_true)
             
             for jj, k in enumerate(kv):
-                pterms = self.p_integrals(k_apfac * k,nmax=nmax)
-                self.pknutable[ii,jj,:-4] = pterms[:-1]
-                self.pknutable[ii,jj,-4] = k**2 * pterms[-1]
-                self.pknutable[ii,jj,-3] = k**2 * nu**2 * pterms[-1]
-                self.pknutable[ii,jj,-2] = k**2 * nu**4 * pterms[-1]
-                self.pknutable[ii,jj,-1] = k**2 * nu**6 * pterms[-1]
+                ktrue = k_apfac * k
+                pterms = self.p_integrals(ktrue,nmax=nmax)
+                
+                #self.pknutable[ii,jj,:-4] = pterms[:-1]
+                self.pknutable[ii,jj,:-7] = pterms[:-1]
+                
+                # counterterms
+                
+                #self.pknutable[ii,jj,-4] = ktrue**2 * pterms[-1]
+                #self.pknutable[ii,jj,-3] = ktrue**2 * nu_true**2 * pterms[-1]
+                #self.pknutable[ii,jj,-2] = ktrue**2 * nu_true**4 * pterms[-1]
+                #self.pknutable[ii,jj,-1] = ktrue**2 * nu_true**6 * pterms[-1]
+                
+                self.pknutable[ii,jj,-7] = ktrue**2 * pterms[-1]
+                self.pknutable[ii,jj,-6] = ktrue**2 * nu_true**2 * pterms[-1]
+                self.pknutable[ii,jj,-5] = ktrue**2 * nu_true**4 * pterms[-1]
+                self.pknutable[ii,jj,-4] = ktrue**2 * nu_true**6 * pterms[-1]
+                
+                # stochastic terms
+                self.pknutable[ii,jj,-3] = 1
+                self.pknutable[ii,jj,-2] = ktrue**2 * nu_true**2
+                self.pknutable[ii,jj,-1] = ktrue**4 * nu_true**4
         
         self.pknutable[ngauss:,:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
         
@@ -543,13 +572,14 @@ class LPT_RSD:
     
     
         b1,b2,bs,b3,alpha0,alpha2,alpha4,alpha6,sn,sn2,sn4 = bvec
-        bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2, bs, b1*bs, b2*bs, bs**2, b3, b1*b3, alpha0, alpha2, alpha4,alpha6])
+        #bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2, bs, b1*bs, b2*bs, bs**2, b3, b1*b3, alpha0, alpha2, alpha4,alpha6])
+        bias_monomials = np.array([1, b1, b1**2, b2, b1*b2, b2**2, bs, b1*bs, b2*bs, bs**2, b3, b1*b3, alpha0, alpha2, alpha4,alpha6,sn,sn2,sn4])
 
         try:
             kv = self.kv
-            p0 = np.sum(self.p0ktable * bias_monomials,axis=1) + sn + 1./3 * kv**2 * sn2 + 1./5 * kv**4 * sn4
-            p2 = np.sum(self.p2ktable * bias_monomials,axis=1) + 2 * kv**2 * sn2 / 3 + 4./7 * kv**4 * sn4
-            p4 = np.sum(self.p4ktable * bias_monomials,axis=1) + 8./35 * kv**4 * sn4
+            p0 = np.sum(self.p0ktable * bias_monomials,axis=1)# + sn + 1./3 * kv**2 * sn2 + 1./5 * kv**4 * sn4
+            p2 = np.sum(self.p2ktable * bias_monomials,axis=1)# + 2 * kv**2 * sn2 / 3 + 4./7 * kv**4 * sn4
+            p4 = np.sum(self.p4ktable * bias_monomials,axis=1)# + 8./35 * kv**4 * sn4
             return kv, p0, p2, p4
         except:
             print("First generate multipole table with make_pltable.")
@@ -682,19 +712,23 @@ class LPT_RSD:
 
         return 4*suppress*np.pi*ret + sn + k**2 * nu**2 * sn2 + k**4 * nu**4 * sn4
         
-    def make_pknu_fixedbias(self, f, nu, bvec, kmin = 1e-2, kmax = 0.25, nk = 50,nmax=5):
+    def make_pknu_fixedbias(self, f, nu, bvec, kv = None, kmin = 1e-2, kmax = 0.25, nk = 50,nmax=5):
     
         self.setup_rsd_facs(f,nu,nmax=nmax)
         
+        if kv is None:
+            kv = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+        else:
+            nk = len(kv)
+        
         pknu= np.zeros(nk) # one column for ks
-        kv = np.logspace(np.log10(kmin), np.log10(kmax), nk)
 
         for foo in range(nk):
             pknu[foo] = self.p_integral_fixedbias(kv[foo],bvec,nmax=nmax)
         
         return kv, pknu
         
-    def make_pell_fixedbias(self, f, bvec, apar = 1, aperp = 1, ngauss=4, kmin = 1e-2, kmax = 0.25, nk = 50,nmax=5):
+    def make_pell_fixedbias(self, f, bvec, apar = 1, aperp = 1, ngauss=4, kv = None, kmin = 1e-2, kmax = 0.25, nk = 50,nmax=5):
         
         nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
         nus_calc = nus[0:ngauss]
@@ -703,8 +737,13 @@ class LPT_RSD:
         L2 = np.polynomial.legendre.Legendre((0,0,1))(nus)
         L4 = np.polynomial.legendre.Legendre((0,0,0,0,1))(nus)
         
+        if kv is None:
+            kv = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+        else:
+            nk = len(kv)
+
         pknutable = np.zeros((len(nus),nk)) # counterterms have distinct nu structure
-        kv = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+
         
         # To implement AP:
         # Calculate P(k,nu) at the true coordinates, given by
