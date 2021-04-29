@@ -3,6 +3,7 @@ import numpy as np
 import time
 
 from scipy.interpolate import interp1d
+from scipy.signal import savgol_filter
 
 from velocileptors.Utils.spherical_bessel_transform_fftw import SphericalBesselTransform
 
