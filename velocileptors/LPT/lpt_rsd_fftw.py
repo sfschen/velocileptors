@@ -784,7 +784,7 @@ class LPT_RSD:
         
         ss0, xi0 = self.sphr.sph(0,p0int)
         ss2, xi2 = self.sphr.sph(2,p2int); xi2 *= -1
-        ss4, xi4 = self.sphr.sph(4,p0int)
+        ss4, xi4 = self.sphr.sph(4,p4int)
         
         return (ss0, xi0), (ss2, xi2), (ss4, xi4)
       
