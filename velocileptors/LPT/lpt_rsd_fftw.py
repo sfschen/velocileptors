@@ -585,6 +585,32 @@ class LPT_RSD:
             print("First generate multipole table with make_pltable.")
             
             
+    def combine_bias_terms_xiell(self,bvec):
+        '''
+        Same as above but further transform the pkells into xiells.
+        
+        Again, the paramters f, AP are assumed to be what was input into p{ell}ktable.
+        
+        '''
+        
+        
+        kv, p0, p2, p4 = self.combine_bias_terms_pkell(bvec)
+            
+        damping = np.exp(-(self.kint/10)**2)
+        p0int = loginterp(kv, p0)(self.kint) * damping
+        p2int = loginterp(kv, p2)(self.kint) * damping
+        p4int = loginterp(kv, p4)(self.kint) * damping
+        
+        ss0, xi0 = self.sphr.sph(0,p0int)
+        ss2, xi2 = self.sphr.sph(2,p2int); xi2 *= -1
+        ss4, xi4 = self.sphr.sph(4,p4int)
+        
+        return (ss0, xi0), (ss2, xi2), (ss4, xi4)
+        
+        #except:
+        #    print("First generate multipole table with make_pltable.")
+            
+            
             
 
     ### Alternative functions to first combine bias terms, then compute power spectrum
