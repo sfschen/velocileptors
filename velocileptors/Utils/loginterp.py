@@ -66,8 +66,13 @@ def loginterp(x, y, yint = None, side = "both", lorder = 9, rorder = 9, lp = 1, 
         yint2 = interpolate(xint, yint, k = 5, ext=3)
     
     else:
-        yint2 = lambda xx: (xx <= x[l]) * y[l]*(xx/x[l])**lneff \
-                         + (xx >= x[r]) * y[r]*(xx/x[r])**rneff \
-                         + (xx > x[l]) * (xx < x[r]) * interpolate(x, y, k = 5, ext=3)(xx)
+        # nan_to_numb is to prevent (xx/x[l/r])^lneff to go to nan on the other side
+        # since this value should be zero on the wrong side anyway
+        #yint2 = lambda xx: (xx <= x[l]) * y[l]*(xx/x[l])**lneff \
+        #                 + (xx >= x[r]) * y[r]*(xx/x[r])**rneff \
+        #                 + (xx > x[l]) * (xx < x[r]) * interpolate(x, y, k = 5, ext=3)(xx)
+        yint2 = lambda xx:   (xx <= x[l]) * y[l]* np.nan_to_num((xx/x[l])**lneff) \
+                   + (xx >= x[r]) * y[r]* np.nan_to_num((xx/x[r])**rneff) \
+                   + (xx > x[l]) * (xx < x[r]) * interpolate(x, y, k = 5, ext=3)(xx)
 
     return yint2
