@@ -7,6 +7,7 @@ from scipy.interpolate import interp1d
 from velocileptors.Utils.spherical_bessel_transform_fftw import SphericalBesselTransform
 from velocileptors.Utils.spherical_bessel_transform import SphericalBesselTransform as SphericalBesselTransformNP
 from velocileptors.Utils.loginterp import loginterp
+from velocileptors.Utils.gaussian_poly_extrap import gaussian_poly_extrap
 
 from velocileptors.Utils.qfuncfft import QFuncFFT
 
@@ -585,7 +586,7 @@ class LPT_RSD:
             print("First generate multipole table with make_pltable.")
             
             
-    def combine_bias_terms_xiell(self,bvec):
+    def combine_bias_terms_xiell(self,bvec,method='loginterp'):
         '''
         Same as above but further transform the pkells into xiells.
         
@@ -593,14 +594,60 @@ class LPT_RSD:
         
         '''
         
-        
         kv, p0, p2, p4 = self.combine_bias_terms_pkell(bvec)
-            
-        damping = np.exp(-(self.kint/10)**2)
-        p0int = loginterp(kv, p0)(self.kint) * damping
-        p2int = loginterp(kv, p2)(self.kint) * damping
-        p4int = loginterp(kv, p4)(self.kint) * damping
         
+        if method == 'loginterp':
+        
+            damping = np.exp(-(self.kint/10)**2)
+            p0int = loginterp(kv, p0)(self.kint) * damping
+            p2int = loginterp(kv, p2)(self.kint) * damping
+            p4int = loginterp(kv, p4)(self.kint) * damping
+            
+        elif method == 'gauss_poly':
+            # Add a point at k = 0 to the spline in k taper nicely
+            
+            frac = 1
+            
+            p0int = gaussian_poly_extrap( self.kint,\
+                                          np.concatenate(([0], kv)),\
+                                          np.concatenate(([0], p0)), frac=frac)
+            
+            p2int = gaussian_poly_extrap( self.kint,\
+                                          np.concatenate(([0], kv)),\
+                                          np.concatenate(([0], p2)), frac=frac )
+            
+            p4int = gaussian_poly_extrap( self.kint,\
+                                          np.concatenate(([0], kv)),\
+                                          np.concatenate(([0], p4)), frac=frac )
+            
+        elif method == 'min_cut':
+            # Start log extrapolating when p_ell is below a threshold value:
+            ftol = 1e-4
+            damping = np.exp(-(self.kint/10)**2)
+            
+            pints = [np.zeros_like(self.kint), np.zeros_like(self.kint), np.zeros_like(self.kint),]
+            
+            for ii, pp in enumerate([p0,p2,p4]):
+                
+                iis = np.arange(len(kv))
+                pval = np.max(pp)
+                
+                try:
+                    zero_crossing = np.where(np.diff(np.sign(pp)))[0][0]
+                except:
+                    zero_crossing = len(pp)
+                    
+                cross_min = pp > (ftol * pval)
+
+                # union is where we interpolate
+                where_int = (iis < zero_crossing) * cross_min
+                ktemp, ptemp = kv[where_int], pp[where_int]
+
+                pints[ii] += loginterp(ktemp, ptemp)(self.kint) * damping
+
+            p0int, p2int, p4int = pints
+            
+            
         ss0, xi0 = self.sphr.sph(0,p0int)
         ss2, xi2 = self.sphr.sph(2,p2int); xi2 *= -1
         ss4, xi4 = self.sphr.sph(4,p4int)
