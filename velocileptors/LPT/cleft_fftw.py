@@ -219,5 +219,18 @@ class CLEFT:
         return kv, res
 
 
+
+    def combine_bias_terms_pk_crossmatter(self,b1,b2,bs,b3,alpha):
+        """A helper function to return P_{gm}, which is a common use-case."""
+        kv  = self.pktable[:,0]
+        ret = self.pktable[:,1]+0.5*b1*self.pktable[:,2]+\
+              0.5*b2*self.pktable[:,4]+0.5*bs*self.pktable[:,7]+\
+              0.5*b3*self.pktable[:,11]+\
+              alpha*kv**2*self.pktable[:,13]
+        return(kv,ret)
+        #
+
+
+
     def export_wisdom(self, wisdom_file='./wisdom.npy'):
         self.sph.export_wisdom(wisdom_file=wisdom_file)
