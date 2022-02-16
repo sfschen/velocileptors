@@ -217,7 +217,7 @@ class QFuncFFT:
         else:
             integrand = _int * self.k**n
         
-        if IR_cut is not 'all':
+        if IR_cut != 'all':
             if IR_cut == 'gt':
                 integrand *= self.ir_greater
             elif IR_cut == 'lt':
