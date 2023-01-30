@@ -33,7 +33,7 @@ power spectra using the Fourier streaming model.
 
 All the models except (4) use velocity spectra from velocity_moments_fftw.py,
 which itself inherits the real-space power spectrum module cleft_fftw.py. The model
-in (4) is described in arXiv:XXXX.
+in (4) is described in https://arxiv.org/abs/2012.04636 .
 
 
 
