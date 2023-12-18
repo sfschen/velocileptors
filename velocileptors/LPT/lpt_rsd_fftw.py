@@ -22,8 +22,9 @@ class LPT_RSD:
         Throughout this code we refer to mu_q as "mu" and mu = n.k as "nu."
     '''
 
-    def __init__(self, k, p, third_order = True, shear=True, one_loop=True,\
-                 kIR = None, cutoff=10, jn=5, N = 2000, threads=None, extrap_min = -5, extrap_max = 3):
+    def __init__(self, k, p,\
+                use_Pzel = True, third_order = True, shear=True, one_loop=True,\
+                kIR = None, cutoff=10, jn=5, N = 2000, threads=None, extrap_min = -5, extrap_max = 3):
 
         self.N = N
         self.extrap_max = extrap_max
@@ -62,6 +63,9 @@ class LPT_RSD:
         self.sph = SphericalBesselTransform(self.qint, L=self.jn, ncol=self.num_power_components, threads=self.threads)
         self.sph1 = SphericalBesselTransform(self.qint, L=self.jn, ncol=1, threads=self.threads)
         self.sphr = SphericalBesselTransformNP(self.kint,L=5,fourier=True)
+        
+        # Use Pzel vs Pb1^2 for the counterterms
+        self.use_Pzel = use_Pzel
 
     
     def setup_powerspectrum(self):
@@ -427,8 +431,11 @@ class LPT_RSD:
             if self.third_order:
                 bias_integrands[10,:] = -2 * K * self.Ub3 * mu1 #b3
                 bias_integrands[11,:] = 2 * self.theta * mu0 #b1 b3
-                
-            bias_integrands[-1,:] = 1 * G0s[l] - 0.5 * Ksq * (self.Xlin_gt * G0s[l] + self.Ylin_gt * mu2) # za
+            
+            if self.use_Pzel:
+                bias_integrands[-1,:] = 1 * G0s[l] - 0.5 * Ksq * (self.Xlin_gt * G0s[l] + self.Ylin_gt * mu2) # za
+            else:
+                bias_integrands[-1,:] = self.corlin * mu0
                                    
             # multiply by IR exponent
             if l == 0:
@@ -765,9 +772,12 @@ class LPT_RSD:
             if self.third_order:
                 bias_integrands[10,:] = -2 * K * self.Ub3 * mu1 #b3
                 bias_integrands[11,:] = 2 * self.theta * mu0 #b1 b3
-                
-            bias_integrands[-1,:] = 1 * G0s[l] - 0.5 * Ksq * (self.Xlin_gt * G0s[l] + self.Ylin_gt * mu2) # za
             
+            if self.use_Pzel:
+                bias_integrands[-1,:] = 1 * G0s[l] - 0.5 * Ksq * (self.Xlin_gt * G0s[l] + self.Ylin_gt * mu2) # za
+            else:
+                bias_integrands[-1,:] = self.corlin * mu0
+                
             # sum up bias terms, treating counterterms separately
             bias_integrand  = np.sum( bias_monomials[:,None]*bias_integrands[:-1,:],axis=0 )
             bias_integrand += k**2 * (alpha0 + alpha2*nu**2 + alpha4*nu**4 + alpha6*nu**6) * bias_integrands[-1,:]
