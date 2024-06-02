@@ -30,6 +30,9 @@ how to produce the correlation function multipoles.
 An example of the most common use-cases is given in "lpt_examples.py" and
 more detailed examples of the LPT and EPT power spectrum calculations are
 given in the appropiately named notebooks.
+We expect most users will want to use either the lpt_rsd or ept_fullresum
+models, described in some detail in the "Direct LPT RSD Examples" and
+"EPT Examples" notebooks.
 
 For most situations computing the power spectrum wedges or multipoles
 is as simple as:
