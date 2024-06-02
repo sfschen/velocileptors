@@ -7,14 +7,13 @@ from scipy.signal import argrelmin, argrelmax, tukey
 from scipy.fftpack import dst, idst
 from scipy.interpolate import InterpolatedUnivariateSpline as Spline
 
-def pnw_dst(k,p, ii_l=None,ii_r=None,extrap_min=1e-3, extrap_max=10, N=16):
-    
+def pnw_dst(k,p, ii_l=None,ii_r=None,extrap_min=1e-3, extrap_max=10, N=16,verbose=False):
     '''
-    Implement the wiggle/no-wiggle split procedure from Benjamin Wallisch's thesis (arXiv:1810.02800)
-    
+    Implement the wiggle/no-wiggle split procedure from Benjamin
+    Wallisch's thesis (arXiv:1810.02800)
     '''
 
-    # put onto a linear grid
+    # put wavenumbers onto a linear grid
     ks = np.linspace( extrap_min, extrap_max, 2**N)
     lnps = Spline(k, np.log(k*p), ext=1)(ks)
  
@@ -29,7 +28,7 @@ def pnw_dst(k,p, ii_l=None,ii_r=None,extrap_min=1e-3, extrap_max=10, N=16):
         d2_even = np.gradient( np.gradient(dst_even) )
         ii_l = argrelmin(gaussian_filter(d2_even,4))[0][0]
         ii_r = argrelmax(gaussian_filter(d2_even,4))[0][1]
-        print(ii_l,ii_r)
+        if verbose: print(ii_l,ii_r)
     
         iis = np.arange(len(dst_odd))
         iis_div = np.copy(iis); iis_div[0] = 1.
@@ -39,7 +38,7 @@ def pnw_dst(k,p, ii_l=None,ii_r=None,extrap_min=1e-3, extrap_max=10, N=16):
         d2_odd = np.gradient( np.gradient(dst_odd) )
         ii_l = argrelmin(gaussian_filter(d2_odd,4))[0][0]
         ii_r = argrelmax(gaussian_filter(d2_odd,4))[0][1]
-        print(ii_l,ii_r)
+        if verbose: print(ii_l,ii_r)
     
         iis = np.arange(len(dst_odd))
         iis_div = np.copy(iis); iis_div[0] = 1.
