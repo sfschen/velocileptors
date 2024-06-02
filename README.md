@@ -27,7 +27,9 @@ A short notebook detailing the same steps for the Fourier Streaming Model
 is given in "Fourier Streaming Model Example.ipynb".
 Also included is "Gaussian Streaming Model Example.ipynb" that runs through
 how to produce the correlation function multipoles.
-An example of the most common use-cases is given in "lpt_examples.py".
+An example of the most common use-cases is given in "lpt_examples.py" and
+more detailed examples of the LPT and EPT power spectrum calculations are
+given in the appropiately named notebooks.
 
 For most situations computing the power spectrum wedges or multipoles
 is as simple as:
@@ -47,7 +49,8 @@ in the Utils directory). Running the EPT version of the above simply
 requires substituting the "LPT" for "EPT" in the import statement,
 though can be made more robust by supplying a cosmology-conscious 
 no-wiggle power spectrum via the keyword pnw.
-See the READMEs in those directories for more information.
+See the READMEs in those directories and the example notebooks for
+more information and examples.
 
 For the most common case of computing the redshift-space power spectrum
 one can use a a _reduced set_ of parameters and beyond_gauss=False:
