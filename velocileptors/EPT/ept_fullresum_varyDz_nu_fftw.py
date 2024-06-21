@@ -107,18 +107,18 @@ class REPT:
         F = apar/aperp
         AP_fac = np.sqrt(1 + mu_obs**2 *(1./F**2 - 1) )
         mu = mu_obs / F / AP_fac
-        
-        # linear power spectrum, to be varied in presence of neutrinos
-        if pcb is None or pcb_nw is None:
-            plin_nw = self.plin_nw
-            plin_w  = self.plin_w - self.plin_nw
-        else:
-            plin_nw = pcb_nw
-            plin_w  = pcb - pcb_nw
-        
+
         # Growth factor
         D2 = Dz**2
         D4 = Dz**4
+
+        # linear power spectrum, to be varied in presence of neutrinos
+        if pcb is None or pcb_nw is None:
+            plin_nw = self.plin_nw
+            plin_w  = self.plin_w
+        else:
+            plin_nw = pcb_nw / D2
+            plin_w  = (pcb - pcb_nw) / D2
         
         b1, b2, bs, b3, alpha0, alpha2, alpha4, alpha6, sn, sn2, sn4 = pars
         
@@ -208,17 +208,17 @@ class REPT:
         AP_fac = np.sqrt(1 + mu_obs**2 *(1./F**2 - 1) )
         mu = mu_obs / F / AP_fac
 
-        # linear power spectrum, to be varied in presence of neutrinos
-        if pcb is None or pcb_nw is None:
-            plin_nw = self.plin_nw
-            plin_w  = self.plin_w - self.plin_nw
-        else:
-            plin_nw = pcb_nw
-            plin_w  = pcb - pcb_nw
-
         # Growth factor
         D2 = Dz**2
         D4 = Dz**4
+
+        # linear power spectrum, to be varied in presence of neutrinos
+        if pcb is None or pcb_nw is None:
+            plin_nw = self.plin_nw
+            plin_w  = self.plin_w
+        else:
+            plin_nw = pcb_nw / D2
+            plin_w  = (pcb - pcb_nw) / D2
                 
         kv = self.kv
         ret = 0
@@ -323,17 +323,17 @@ class REPT:
         AP_fac = np.sqrt(1 + mu_obs**2 *(1./F**2 - 1) )
         mu = mu_obs / F / AP_fac
 
-        # linear power spectrum, to be varied in presence of neutrinos
-        if pcb is None or pcb_nw is None:
-            plin_nw = self.plin_nw
-            plin_w  = self.plin_w - self.plin_nw
-        else:
-            plin_nw = pcb_nw
-            plin_w  = pcb - pcb_nw
-
         # Growth factor
         D2 = Dz**2
         D4 = Dz**4
+
+        # linear power spectrum, to be varied in presence of neutrinos
+        if pcb is None or pcb_nw is None:
+            plin_nw = self.plin_nw
+            plin_w  = self.plin_w
+        else:
+            plin_nw = pcb_nw / D2
+            plin_w  = (pcb - pcb_nw) / D2
         
         kv = self.kv
         ret = 0
