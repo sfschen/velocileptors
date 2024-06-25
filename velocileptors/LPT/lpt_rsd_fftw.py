@@ -130,7 +130,7 @@ class LPT_RSD:
         self.Bfac = -0.5 * self.Kfac2 * self.Ylin * self.D**2 # this times k is "B"
         
         # Define Anu, Bnu such that \hn \cdot \hq = Anu * mu + Bnu * sqrt(1-mu^2) cos(phi)
-        self.Anu, self.Bnu = self.nu * (1 + f) / self.Kfac, np.sqrt(1-nu**2) / self.Kfac
+        self.Anu, self.Bnu = self.nu * (1 + f) / self.Kfac, np.sqrt(1-self.nu**2) / self.Kfac
         
         # Compute derivatives
         # Each is a function of f, nu times (kq)^(-n) for the nth derivative
@@ -333,7 +333,7 @@ class LPT_RSD:
     
     ### Now define the actual integrals!
 
-    def p_integrals(self, k, nmax=8):
+    def p_integrals(self, k, nmax=8, old=False):
         
         ksq = k**2
         Kfac = self.Kfac
@@ -390,20 +390,20 @@ class LPT_RSD:
             mu0 = G0s[l]
             nq1 = self.Anu * G01s[l] + self.Bnu * G10s[l]
             mu_nq1 = self.Anu * G02s[l] + self.Bnu * G11s[l]
-            nq2 = self.Anu**2 * G02s[l] + 2 * self.Anu * self.Bnu * G11s[l] + self.Bnu**2 * self.Bnu**2 * G20s[l]
+            nq2 = self.Anu**2 * G02s[l] + 2 * self.Anu * self.Bnu * G11s[l] + self.Bnu**(2+2*old) * G20s[l]
             mu1 = G01s[l]
             mu2 = G02s[l]
             mu3 = G03s[l]
             mu2_nq1 = self.Anu * G03s[l] + self.Bnu * G12s[l]
             mu4 = G04s[l]
             
-            bias_integrands[0,:] = 1 * G0s[l] - 0.5 * Ksq * (self.Xlin_gt * G0s[l] + self.Ylin_gt * mu2) # za
+            bias_integrands[0,:] = 1 * G0s[l]  - 0.5 * Ksq * (self.Xlin_gt * G0s[l] + self.Ylin_gt * mu2) # za
             
             bias_integrands[0,:] += -0.5 * ksq * ( 2*(Kfac**2 + 2*f*(1+f)*nu**2) * G0s[l] * self.X13 +\
                                                   2*(Kfac**2*mu2 + 2*f*Kfac*nu*mu_nq1) * self.Y13 +\
                                                    (Kfac**2 + 2*f*(1+f)*nu**2 + f**2*nu**2) * G0s[l] * self.X22 +\
-                                                   (Kfac**2*mu2 + 2*f*Kfac*nu*mu_nq1 + f**2*nu**2*nq2) * self.Y22)\
-                                 + Ksq**2 / 8. * (self.Xlin_gt**2 * G0s[l] + 2*self.Xlin_gt*self.Ylin_gt*mu2 + self.Ylin_gt**2 * mu4)# Aloop
+                                                   (Kfac**2*mu2 + 2*f*Kfac*nu*mu_nq1 + f**2*nu**2*nq2) * self.Y22) \
+                                  + Ksq**2 / 8. * (self.Xlin_gt**2 * G0s[l] + 2*self.Xlin_gt*self.Ylin_gt*mu2 + self.Ylin_gt**2 * mu4)# Aloop
 
                                             
             bias_integrands[0,:] += 0.5*k**3 * ( 2*Kfac*(Kfac**2+f*(1+f)*nu**2) * G01s[l] * self.V1 +  \
@@ -413,9 +413,9 @@ class LPT_RSD:
             bias_integrands[1,:] = -2 * K * (self.Ulin + self.U3) * mu1 - Ksq * (self.X10 * mu0 + self.Y10 * mu2 ) \
                                    -4*f*k*nu*self.U3*nq1 - f*ksq*nu*(self.X10 * Knfac * mu0 + Kfac * self.Y10 * mu_nq1)\
                                    -2 * K * self.Ulin * ( -0.5*Ksq*(self.Xlin_gt*mu1 + self.Ylin_gt*mu3) )
-                                   
+                        
             bias_integrands[2,:] = self.corlin * (mu0 - 0.5*Ksq*(self.Xlin_gt*mu0 + self.Ylin_gt*mu2) )\
-                                   - Ksq*self.Ulin**2*mu2 - k*(Kfac*mu1 + f*k*nu*nq1)*self.U11
+                                   - Ksq*self.Ulin**2*mu2 - (K*mu1 + f*k*nu*nq1)*self.U11
                                    
                                    
             bias_integrands[3,:] = - Ksq * self.Ulin**2 * mu2 - k*(Kfac*mu1 + f*nu*nq1)*self.U20 # b2
@@ -451,7 +451,7 @@ class LPT_RSD:
         return 4*suppress*np.pi*ret
         
 
-    def make_ptable(self, f, nu, kv = None, kmin = 1e-2, kmax = 0.25, nk = 50,nmax=5):
+    def make_ptable(self, f, nu, kv = None, kmin = 1e-2, kmax = 0.25, nk = 50,nmax=5, old=False):
     
         self.setup_rsd_facs(f,nu,nmax=nmax)
         
@@ -464,7 +464,7 @@ class LPT_RSD:
         
         self.pktable[:, 0] = kv[:]
         for foo in range(nk):
-            self.pktable[foo, 1:] = self.p_integrals(kv[foo],nmax=nmax)
+            self.pktable[foo, 1:] = self.p_integrals(kv[foo],nmax=nmax, old=old)
         
         # store a copy in pktables dictionary
         self.pktables[nu] = np.array(self.pktable)
@@ -731,7 +731,7 @@ class LPT_RSD:
             mu0 = G0s[l]
             nq1 = self.Anu * G01s[l] + self.Bnu * G10s[l]
             mu_nq1 = self.Anu * G02s[l] + self.Bnu * G11s[l]
-            nq2 = self.Anu**2 * G02s[l] + 2 * self.Anu * self.Bnu * G11s[l] + self.Bnu**2 * self.Bnu**2 * G20s[l]
+            nq2 = self.Anu**2 * G02s[l] + 2 * self.Anu * self.Bnu * G11s[l] + self.Bnu**2 * G20s[l]
             mu1 = G01s[l]
             mu2 = G02s[l]
             mu3 = G03s[l]
