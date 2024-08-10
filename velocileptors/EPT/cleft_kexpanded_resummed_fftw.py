@@ -17,7 +17,7 @@ class RKECLEFT:
     
     '''
 
-    def __init__(self, k, p, pnw=None, N=2000, *args, rbao = 110, sbao=None, **kw):
+    def __init__(self, k, p, pnw=None, N=4000, *args, rbao = 110, sbao=None, **kw):
         
         
         self.rbao = rbao
