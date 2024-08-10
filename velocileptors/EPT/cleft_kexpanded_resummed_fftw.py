@@ -6,6 +6,7 @@ from scipy.interpolate import interp1d
 from scipy.signal import savgol_filter
 
 from velocileptors.Utils.spherical_bessel_transform_fftw import SphericalBesselTransform
+from velocileptors.Utils.pnw_dst import pnw_dst
 
 from velocileptors.EPT.cleft_kexpanded_fftw import KECLEFT
 
@@ -16,13 +17,13 @@ class RKECLEFT:
     
     '''
 
-    def __init__(self, k, p, pnw=None, *args, rbao = 110, sbao=None, **kw):
+    def __init__(self, k, p, pnw=None, N=2000, *args, rbao = 110, sbao=None, **kw):
         
         
         self.rbao = rbao
         
         # construct pair of wiggle/no-wiggle objects
-        self.cleft = KECLEFT( k, p, third_order=True, **kw)
+        self.cleft = KECLEFT( k, p, third_order=True, N=N, **kw)
         self.cleft.compute_p_linear()
         self.cleft.compute_p_connected()
         self.cleft.compute_p_k0()
@@ -32,13 +33,16 @@ class RKECLEFT:
         self.cleft.compute_p_k4()
         
         if pnw is None:
-            knw = self.cleft.kint
-            Nfilter =  np.ceil(np.log(7) /  np.log(knw[-1]/knw[-2])) // 2 * 2 + 1 # filter length ~ log span of one oscillation from k = 0.01
-            pnw = savgol_filter(self.cleft.pint, int(Nfilter), 4)
+            # savgol was not reliable at high k
+            #knw = self.cleft.kint
+            #Nfilter =  np.ceil(np.log(7) /  np.log(knw[-1]/knw[-2])) // 2 * 2 + 1 # filter length ~ log span of one oscillation from k = 0.01
+            #pnw = savgol_filter(self.cleft.pint, int(Nfilter), 4)
+            # use pnw_dst from Ben Wallisch's thesis
+            knw, pnw = pnw_dst(k, p)
         else:
             knw, pnw = k, pnw
             
-        self.cleft_nw = KECLEFT( knw, pnw, third_order=True, **kw)
+        self.cleft_nw = KECLEFT( knw, pnw, third_order=True, N=N, **kw)
         self.cleft_nw.compute_p_linear()
         self.cleft_nw.compute_p_connected()
         self.cleft_nw.compute_p_k0()
