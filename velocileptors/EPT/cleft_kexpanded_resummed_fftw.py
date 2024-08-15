@@ -54,7 +54,7 @@ class RKECLEFT:
         # compute BAO damping
         if sbao is None:
             self.sigma_squared_bao = np.interp(self.rbao,\
-                                               self.cleft_nw.qint, self.cleft_nw.Xlin + self.cleft_nw.Ylin/3.)
+                                               self.cleft.qint, self.cleft.Xlin + self.cleft.Ylin)
         else:
             self.sigma_squared_bao = sbao
 
