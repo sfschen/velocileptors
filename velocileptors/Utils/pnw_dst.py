@@ -3,7 +3,7 @@ from velocileptors.Utils.loginterp import loginterp
 
 from scipy.interpolate import interp1d
 from scipy.ndimage import gaussian_filter
-from scipy.signal import argrelmin, argrelmax, tukey
+from scipy.signal import argrelmin, argrelmax
 from scipy.fftpack import dst, idst
 from scipy.interpolate import InterpolatedUnivariateSpline as Spline
 
