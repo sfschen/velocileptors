@@ -148,3 +148,7 @@ https://github.com/eelregit/mcfit
 
 The main modification is that we save the Mellin transform kernels used in FFTLog to
 save time, since they take more time than the fft's themselves to evaluate.
+
+---
+
+We thank Arnaud De Mattia for help debugging features involving massive neutrinos.
