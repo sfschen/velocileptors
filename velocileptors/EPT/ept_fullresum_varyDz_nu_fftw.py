@@ -98,7 +98,7 @@ class REPT:
 
     # Combine everything into redshift space power spectrum, all at once!
 
-    def compute_redshift_space_power_at_mu(self, pars, f, mu_obs, pcb = None, pcb_nw=None, apar=1., aperp=1.,bFoG=0, Dz=1):
+    def compute_redshift_space_power_at_mu(self, pars, f, mu_obs, pcb = None, pcb_nw=None, apar=1., aperp=1., bFoG=0, Dz=1):
 
         # Change mu to the "true" from the input observed
         # Note that kv below refers to "true" k
@@ -192,7 +192,7 @@ class REPT:
         return kv, pobs
 
 
-    def _get_redshift_space_power_coefficient_at_mu(self, indices, f, mu_obs, pcb=None, pcb_nw=None, apar=1., aperp=1.,bFoG=0, Dz=1):
+    def _get_redshift_space_power_coefficient_at_mu(self, indices, f, mu_obs, pcb=None, pcb_nw=None, apar=1., aperp=1., bFoG=0, Dz=1):
         '''
         Auxiliary function to get bias coefficients i.e. for dP(k,mu)/d(b1b2).
 
@@ -397,7 +397,7 @@ class REPT:
         return bias_table
 
 
-    def compute_redshift_space_power_multipoles(self, pars, f,  pcb = None, pcb_nw=None, ngauss=4, apar=1., aperp=1.,bFoG=0, Dz=1):
+    def compute_redshift_space_power_multipoles(self, pars, f,  pcb = None, pcb_nw=None, ngauss=4, apar=1., aperp=1., bFoG=0, Dz=1):
 
         # Generate the sampling
         nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
