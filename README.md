@@ -129,7 +129,7 @@ The velocileptors code was entered into the [blind mock challenge](https://www2.
 [here](https://arxiv.org/abs/2003.08277).  We
 summarize the results in the figure below, where the shaded regions are errors for a 5 (Gpc/h)^3 volume with the same signal.
 
-![PT challenge](param_plot_desi_vol.png)
+![PT challenge](https://github.com/sfschen/velocileptors/blob/master/param_plot_desi_vol.png?raw=true)
 
 ---
 
