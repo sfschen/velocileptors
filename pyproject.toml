@@ -21,3 +21,6 @@ dependencies = ["numpy", "scipy", "pyfftw"]
 
 [project.urls]
 Home = "https://github.com/sfschen/velocileptors"
+
+[tool.flit.sdist]
+exclude = ["deprecated", "notebooks", "tests", "param_plot_desi_vol.png"]
