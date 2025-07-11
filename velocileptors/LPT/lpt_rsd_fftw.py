@@ -510,7 +510,7 @@ class LPT_RSD:
             nu_true = nu * aperp/apar/fac
             vol_fac = apar * aperp**2
         
-            self.setup_rsd_facs(f,nu_true)
+            self.setup_rsd_facs(f,nu_true,nmax=nmax)
             
             for jj, k in enumerate(kv):
                 ktrue = k_apfac * k
