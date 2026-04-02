@@ -147,7 +147,7 @@ class GaussianStreamingModel(VelocityMoments):
         
         integrand = xi_int * np.exp( -0.5 * (ys - v_int)**2 / s_int ) / np.sqrt(2*np.pi*s_int)
         integrand[np.isnan(integrand)] = 0.
-        return np.trapz(integrand, x=ys) - 1
+        return np.trapezoid(integrand, x=ys) - 1
 
 
     def compute_xi_ell(self, s, f, b1, b2, bs, b3, alpha, alpha_v, alpha_s0, alpha_s2, s2fog, apar=1.0, aperp=1.0, rwidth=100, Nint=10000, ngauss=4, update_cumulants=False):

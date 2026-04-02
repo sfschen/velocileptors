@@ -178,7 +178,7 @@ class QFuncFFT:
         self.V3loop112 = self.xi_l_n(1,-3,_int=3./35*(2*self.R1+4*self.R2-4*self.Q1+2*self.Q2)) - 0.2*self.Tloop112
         
         # A10
-        self.zerolag_10_loop12 = np.trapz((self.R1-self.R2)/7.,x=self.k) / (2*np.pi**2)
+        self.zerolag_10_loop12 = np.trapezoid((self.R1-self.R2)/7.,x=self.k) / (2*np.pi**2)
         self.xi0m2_10_loop12 = self.xi_l_n(0,-2, _int=4*self.R2+2*self.Q5)/14.
         self.xi2m2_10_loop12 = self.xi_l_n(2,-2, _int=3*self.R1+4*self.R2+2*self.Q5)/14.
         
