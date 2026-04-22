@@ -589,55 +589,68 @@ class LPT_RSD:
             kv = np.logspace(np.log10(kmin), np.log10(kmax), nk)
         else:
             nk = len(kv)
-        self.pknutable = np.zeros((len(nus),nk,self.num_power_components+6)) 
-        
-        
+        self.pknutable = np.zeros((len(nus),nk,self.num_power_components+6))
+        # IR-resummed damped linear P(k,nu) (i.e. pterms[-1], which the alpha0
+        # counterterm column multiplies by ktrue**2). Stored WITHOUT the
+        # ktrue**2 factor, so downstream code (tree-level bispectrum) can use
+        # its Legendre multipoles as the damped linear multipoles.
+        self.presknutable = np.zeros((len(nus), nk))
+
+
         # To implement AP:
         # Calculate P(k,nu) at the true coordinates, given by
         # k_true = k_apfac * kobs
         # nu_true = nu * a_perp/a_par/fac
         # Note that the integration grid on the other hand is never observed
-        
+
         for ii, nu in enumerate(nus_calc):
-        
+
             fac = np.sqrt(1 + nu**2 * ((aperp/apar)**2-1))
             k_apfac = fac / aperp
             nu_true = nu * aperp/apar/fac
             vol_fac = apar * aperp**2
-        
+
             self.setup_rsd_facs(f,nu_true,nmax=nmax)
-            
+
             for jj, k in enumerate(kv):
                 ktrue = k_apfac * k
                 pterms = self.p_integrals(ktrue,nmax=nmax)
-                
+
                 #self.pknutable[ii,jj,:-4] = pterms[:-1]
                 self.pknutable[ii,jj,:-7] = pterms[:-1]
-                
+
                 # counterterms
-                
+
                 #self.pknutable[ii,jj,-4] = ktrue**2 * pterms[-1]
                 #self.pknutable[ii,jj,-3] = ktrue**2 * nu_true**2 * pterms[-1]
                 #self.pknutable[ii,jj,-2] = ktrue**2 * nu_true**4 * pterms[-1]
                 #self.pknutable[ii,jj,-1] = ktrue**2 * nu_true**6 * pterms[-1]
-                
+
                 self.pknutable[ii,jj,-7] = ktrue**2 * pterms[-1]
                 self.pknutable[ii,jj,-6] = ktrue**2 * nu_true**2 * pterms[-1]
                 self.pknutable[ii,jj,-5] = ktrue**2 * nu_true**4 * pterms[-1]
                 self.pknutable[ii,jj,-4] = ktrue**2 * nu_true**6 * pterms[-1]
-                
+
                 # stochastic terms
                 self.pknutable[ii,jj,-3] = 1
                 self.pknutable[ii,jj,-2] = ktrue**2 * nu_true**2
                 self.pknutable[ii,jj,-1] = ktrue**4 * nu_true**4
-        
+
+                # IR-resummed damped linear power (no ktrue**2 factor)
+                self.presknutable[ii,jj] = pterms[-1]
+
         self.pknutable[ngauss:,:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
-        
+        self.presknutable[ngauss:,:] = np.flip(self.presknutable[0:ngauss], axis=0)
+
         self.kv = kv
         self.p0ktable = 0.5 * np.sum((ws*L0)[:,None,None]*self.pknutable,axis=0) / vol_fac
         self.p2ktable = 2.5 * np.sum((ws*L2)[:,None,None]*self.pknutable,axis=0) / vol_fac
         self.p4ktable = 4.5 * np.sum((ws*L4)[:,None,None]*self.pknutable,axis=0) / vol_fac
-        
+
+        self.pres0ktable = 0.5 * np.sum((ws*L0)[:,None]*self.presknutable, axis=0) / vol_fac
+        self.pres2ktable = 2.5 * np.sum((ws*L2)[:,None]*self.presknutable, axis=0) / vol_fac
+        self.pres4ktable = 4.5 * np.sum((ws*L4)[:,None]*self.presknutable, axis=0) / vol_fac
+
         return 0
 
     def combine_bias_terms_pkmu(self,nu,bvec):
