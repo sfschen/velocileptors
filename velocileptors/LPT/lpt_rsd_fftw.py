@@ -30,7 +30,8 @@ class LPT_RSD:
 
     def __init__(self, k, p,\
                 use_Pzel = False, third_order = True, shear=True, one_loop=True,\
-                kIR = None, cutoff=10, extrap_min=-4, extrap_max=1, N=256, jn=5, threads=None):
+                kIR = None, cutoff=10, extrap_min=-4, extrap_max=1, N=256, jn=5, threads=None,
+                extrap_min_corrfunc=-5, extrap_max_corrfunc=3, N_corrfunc=2000):
 
         self.N = N
         self.extrap_max = extrap_max
@@ -68,7 +69,9 @@ class LPT_RSD:
 
         self.sph = SphericalBesselTransform(self.qint, L=self.jn, ncol=self.num_power_components, threads=self.threads)
         self.sph1 = SphericalBesselTransform(self.qint, L=self.jn, ncol=1, threads=self.threads)
-        self.sphr = SphericalBesselTransformNP(self.kint,L=5,fourier=True)
+
+        self.k_extrap_corrfunc = np.logspace(extrap_min_corrfunc, extrap_max_corrfunc, N_corrfunc)
+        self.sphr = SphericalBesselTransformNP(self.k_extrap_corrfunc,L=5,fourier=True)
 
         # Use Pzel vs Pb1^2 for the counterterms
         self.use_Pzel = use_Pzel
@@ -710,27 +713,27 @@ class LPT_RSD:
         kv, p0, p2, p4 = self.combine_bias_terms_pkell(bvec)
 
         if method == 'loginterp':
-            damping = np.exp(-(self.kint/10)**2)
-            p0int = loginterp(kv, p0)(self.kint) * damping
-            p2int = loginterp(kv, p2)(self.kint) * damping
-            p4int = loginterp(kv, p4)(self.kint) * damping
+            damping = np.exp(-(self.k_extrap_corrfunc/10)**2)
+            p0int = loginterp(kv, p0)(self.k_extrap_corrfunc) * damping
+            p2int = loginterp(kv, p2)(self.k_extrap_corrfunc) * damping
+            p4int = loginterp(kv, p4)(self.k_extrap_corrfunc) * damping
 
         elif method == 'gauss_poly':
             frac = 1
-            p0int = gaussian_poly_extrap(self.kint,
+            p0int = gaussian_poly_extrap(self.k_extrap_corrfunc,
                                          np.concatenate(([0], kv)),
                                          np.concatenate(([0], p0)), frac=frac)
-            p2int = gaussian_poly_extrap(self.kint,
+            p2int = gaussian_poly_extrap(self.k_extrap_corrfunc,
                                          np.concatenate(([0], kv)),
                                          np.concatenate(([0], p2)), frac=frac)
-            p4int = gaussian_poly_extrap(self.kint,
+            p4int = gaussian_poly_extrap(self.k_extrap_corrfunc,
                                          np.concatenate(([0], kv)),
                                          np.concatenate(([0], p4)), frac=frac)
 
         elif method == 'min_cut':
             ftol = 1e-4
-            damping = np.exp(-(self.kint/10)**2)
-            pints = [np.zeros_like(self.kint), np.zeros_like(self.kint), np.zeros_like(self.kint)]
+            damping = np.exp(-(self.k_extrap_corrfunc/10)**2)
+            pints = [np.zeros_like(self.k_extrap_corrfunc), np.zeros_like(self.k_extrap_corrfunc), np.zeros_like(self.k_extrap_corrfunc)]
             for ii, pp in enumerate([p0, p2, p4]):
                 iis = np.arange(len(kv))
                 pval = np.max(pp)
@@ -741,7 +744,7 @@ class LPT_RSD:
                 cross_min = pp > (ftol * pval)
                 where_int = (iis < zero_crossing) * cross_min
                 ktemp, ptemp = kv[where_int], pp[where_int]
-                pints[ii] += loginterp(ktemp, ptemp)(self.kint) * damping
+                pints[ii] += loginterp(ktemp, ptemp)(self.k_extrap_corrfunc) * damping
             p0int, p2int, p4int = pints
 
         ss0, xi0 = self.sphr.sph(0, p0int)
@@ -974,10 +977,10 @@ class LPT_RSD:
             kmin=kmin, kmax=kmax, nk=nk, nmax=nmax,
         )
 
-        damping = np.exp(-(self.kint/10)**2)
-        p0int = loginterp(kv, p0k)(self.kint) * damping
-        p2int = loginterp(kv, p2k)(self.kint) * damping
-        p4int = loginterp(kv, p4k)(self.kint) * damping
+        damping = np.exp(-(self.k_extrap_corrfunc/10)**2)
+        p0int = loginterp(kv, p0k)(self.k_extrap_corrfunc) * damping
+        p2int = loginterp(kv, p2k)(self.k_extrap_corrfunc) * damping
+        p4int = loginterp(kv, p4k)(self.k_extrap_corrfunc) * damping
 
         ss0, xi0 = self.sphr.sph(0, p0int)
         ss2, xi2 = self.sphr.sph(2, p2int); xi2 *= -1
