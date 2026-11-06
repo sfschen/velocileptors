@@ -213,7 +213,7 @@ class LPT_RSD:
         x = self.ic2
 
         ret = self.s * (-self.hyp1[n,m] + (1-2*n)*self.hyp2[n,m])
-        ret *= - self.s
+        ret *= - self.s / self.c
         
         return self.fnms[n,m] * ret # / (k*self.qint)
     
@@ -766,9 +766,8 @@ class LPT_RSD:
         fly with `bias_monomials` + counterterms so we only need the scalar-column FFTW
         plan (self.sph1).
 
-        Note: the bias[2] piece below matches the ORIGINAL p_integral_fixedbias form
-        (`-k*(Kfac*mu1 + f*k*nu*nq1)*self.U11`), which differs from p_integrals'
-        `-(K*mu1 + f*k*nu*nq1)*self.U11`. Preserved bit-for-bit.
+        Note: the bias[2] U11 contraction matches p_integrals, i.e.
+        `-(K*mu1 + f*k*nu*nq1)*self.U11` with K = k*Kfac.
         '''
 
         b1, b2, bs, b3, alpha0, alpha2, alpha4, alpha6, sn, sn2, sn4 = bvec
@@ -861,12 +860,11 @@ class LPT_RSD:
             - 2 * K * self.Ulin * (-0.5*Ksq * (Xg*mu1 + Yg*mu3))
         )
 
-        # NOTE: the last term here uses the p_integral_fixedbias original form:
-        # -k*(Kfac*mu1 + f*k*nu*nq1)*U11 (an extra factor of k vs p_integrals).
+        # NOTE: the last term matches p_integrals: -(K*mu1 + f*k*nu*nq1)*U11, K = k*Kfac.
         bias_integrands_all[:, 2, :] = (
             self.corlin * (mu0 - 0.5*Ksq * (Xg*mu0 + Yg*mu2))
             - Ksq * self.Ulin**2 * mu2
-            - k * (Kfac*mu1 + f*k*nu*nq1) * self.U11
+            - k * (Kfac*mu1 + f*nu*nq1) * self.U11
         )
 
         bias_integrands_all[:, 3, :] = (
