@@ -986,3 +986,109 @@ class LPT_RSD:
 
         return (ss0, xi0), (ss2, xi2), (ss4, xi4)
  
+
+    def make_p_linres_ltable(self,f, apar = 1, aperp = 1, ngauss = 3, kv = None, kmin = 1e-2, kmax = 0.25, nk = 50, nmax=5):
+        nus, ws = np.polynomial.legendre.leggauss(2*ngauss)
+        nus_calc = nus[0:ngauss]
+        
+        L0 = np.polynomial.legendre.Legendre((1))(nus)
+        L2 = np.polynomial.legendre.Legendre((0,0,1))(nus)
+        L4 = np.polynomial.legendre.Legendre((0,0,0,0,1))(nus)
+      
+        if kv is None:
+            kv = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+        else:
+            nk = len(kv)
+
+        p_linres_knutable = np.zeros((len(nus), nk))
+
+        for ii, nu in enumerate(nus_calc):
+
+            fac = np.sqrt(1 + nu**2 * ((aperp/apar)**2-1))
+            k_apfac = fac / aperp
+            nu_true = nu * aperp/apar/fac
+            vol_fac = apar * aperp**2
+
+            self.setup_rsd_facs(f,nu_true,nmax=nmax)
+
+            for jj, k in enumerate(kv):
+                ktrue = k_apfac * k
+                p_linres_knutable[ii,jj] = self.p_integral_linres(ktrue,nmax=nmax)
+
+        p_linres_knutable[ngauss:,:] = np.flip(p_linres_knutable[0:ngauss], axis=0)
+
+        p_linres_0ktable = 0.5 * np.sum((ws*L0)[:,None]*p_linres_knutable, axis=0) / vol_fac
+        p_linres_2ktable = 2.5 * np.sum((ws*L2)[:,None]*p_linres_knutable, axis=0) / vol_fac
+        p_linres_4ktable = 4.5 * np.sum((ws*L4)[:,None]*p_linres_knutable, axis=0) / vol_fac
+
+        return kv, p_linres_0ktable, p_linres_2ktable, p_linres_4ktable
+
+    def p_integral_linres(self, k, nmax=8):
+        """
+        Compute Eq.4 of https://arxiv.org/pdf/2610.10530
+
+        Equivalent to creating a new LPT_RSD instance with
+        use_Pzel = one_loop = shear = third_order = False, kIR = None
+        and returning p_integrals(k)[-1].
+        """
+        Kfac2 = self.Kfac2
+        K = k*self.Kfac; Ksq = K**2
+        D2 = self.D**2
+
+        if self.kIR is not None:
+            #recompute kIR dependent quantities. Uses D=1 throughout.
+            qf = QFuncFFT(self.kint, self.pint, kIR=None, qv=self.qint, oneloop=False, shear=False, third_order=False)
+                
+            Xlin = qf.Xlin_lt
+            Ylin = qf.Ylin_lt
+            XYlin = Xlin + Ylin; sigma = XYlin[-1]
+            
+            corlin = qf.corlin
+            #G0_band unaffected by kIR
+            jn = self.jn
+            kpow = k**(2*np.arange(jn+nmax))
+
+            #D = 1
+            Bfac = -0.5 * Kfac2 * Ylin 
+
+            powerfacs = np.array([ (Bfac /self.ic2)**n for n in range(self.jn + nmax) ]) 
+            kpow_pf = kpow[:, None] * powerfacs
+            
+            mu0 = self._G0_band @ kpow_pf
+            
+        else:
+            Xlin = self.Xlin
+            Ylin = self.Ylin
+            XYlin = self.XYlin; sigma = self.sigma
+
+            corlin = self.corlin
+            mu0 = self._compute_G_arrays(k, nmax)[0]
+
+        expon = np.exp(-0.5*Ksq * D2* (XYlin - sigma))
+        suppress = np.exp(-0.5*Ksq * D2* sigma)
+        
+        ret = np.zeros((self.jn, self.N))
+
+        ret[:,:] = corlin * mu0
+
+        # IR exponent * (-2/(k q))^l, broadcast over component axis.
+        kq_fac = -2.0 / (k * self.qint)                          # (N,)
+        factor_l = expon[None, :] * (kq_fac[None, :] ** np.arange(self.jn)[:, None])  # (jn, N)
+        ret *= factor_l[:, :]
+        # l=0: subtract value at q=qint[-1] (large-q DC removal).
+        ret[0] -= ret[0, -1:]
+
+        out = 0.
+
+        for l in range(self.jn):
+            ktemps, bias_ffts = self.sph.sph(l, ret[l:l+1,:])
+            idx = np.searchsorted(ktemps, k)
+            if idx < 1:
+                idx = 1
+            elif idx > len(ktemps) - 1:
+                idx = len(ktemps) - 1
+            x0 = ktemps[idx-1]; x1 = ktemps[idx]
+            w = (k - x0) / (x1 - x0)
+            out += bias_ffts[0, idx-1] + w * (bias_ffts[0, idx] - bias_ffts[0, idx-1])
+
+        return 4*suppress*np.pi*out
