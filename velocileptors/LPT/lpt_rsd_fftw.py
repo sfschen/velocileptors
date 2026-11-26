@@ -12,6 +12,41 @@ from velocileptors.Utils.gaussian_poly_extrap import gaussian_poly_extrap
 from velocileptors.Utils.qfuncfft import QFuncFFT
 
 
+def _interp_k(k, ktemps, ffts):
+    '''
+        Local 4-point (cubic) Lagrange interpolation in ln(k) of the FFTLog
+        outputs ffts[:, j] (sampled at ktemps[j]) to the single wavenumber k.
+        Uses the stencil of 4 nodes centred on k where possible, clipped at the
+        ends of the grid. Returns an array of shape (ffts.shape[0],).
+    '''
+    x = np.log(ktemps); x0 = np.log(k)
+    i = int(np.clip(np.searchsorted(x, x0) - 2, 0, len(x) - 4))
+    xs = x[i:i + 4]
+    w = np.array([np.prod([(x0 - xs[m])/(xs[j] - xs[m]) for m in range(4) if m != j]) for j in range(4)])
+    return ffts[:, i:i + 4] @ w
+
+
+def _interp_k_many(kv, ktemps, ffts, out=None):
+    '''
+        Vectorised _interp_k for many wavenumbers at once: ffts[j, :, n] are the FFTLog outputs for kv[j] (sampled at
+        ktemps[n]); returns ffts interpolated to kv, shape (len(kv), ffts.shape[1]), added into out if given.
+        Same 4-point stencil and clipping.
+    '''
+    x = np.log(ktemps); x0 = np.log(kv); nk = len(kv)
+    i0 = np.clip(np.searchsorted(x, x0) - 2, 0, len(x) - 4)
+    xs = x[i0[:, None] + np.arange(4)[None, :]]
+    w = np.ones((nk, 4))
+    for j in range(4):
+        for m in range(4):
+            if m != j:
+                w[:, j] *= (x0 - xs[:, m]) / (xs[:, j] - xs[:, m])
+    jk = np.arange(nk)
+    if out is None:
+        out = np.zeros((nk, ffts.shape[1]))
+    for j in range(4):
+        out += w[:, j:j + 1] * ffts[jk, :, i0 + j]
+    return out
+
 
 class LPT_RSD:
 
@@ -31,7 +66,8 @@ class LPT_RSD:
     def __init__(self, k, p,\
                 use_Pzel = False, third_order = True, shear=True, one_loop=True,\
                 kIR = None, cutoff=10, extrap_min=-4, extrap_max=1, N=256, jn=5, threads=None,
-                extrap_min_corrfunc=-5, extrap_max_corrfunc=3, N_corrfunc=2000):
+                extrap_min_corrfunc=-5, extrap_max_corrfunc=3, N_corrfunc=2000,
+                linear_subtraction=False, q_taper_decades=1.):
 
         self.N = N
         self.extrap_max = extrap_max
@@ -75,6 +111,18 @@ class LPT_RSD:
 
         # Use Pzel vs Pb1^2 for the counterterms
         self.use_Pzel = use_Pzel
+
+        # Linear subtraction: FFTLog only the non-linear remainder, add linear theory back exactly at k (p_integrals)
+        self.linear_subtraction = linear_subtraction
+        if linear_subtraction:
+            spl = loginterp(k, p); c = self.cutoff
+            self._plin_exact = lambda kk, spl=spl, c=c: spl(kk) * np.exp(-(kk / c)**2)
+            lq = np.log10(self.qint)
+            if q_taper_decades and q_taper_decades > 0:
+                x = np.clip((lq - (lq[-1] - q_taper_decades)) / q_taper_decades, 0, 1)
+                self._taper = 0.5 * (1 + np.cos(np.pi * x))
+            else:
+                self._taper = np.ones_like(lq)
 
     
     def setup_powerspectrum(self):
@@ -531,20 +579,29 @@ class LPT_RSD:
         kq_fac = -2.0 / (k * self.qint)                          # (N,)
         factor_l = expon[None, :] * (kq_fac[None, :] ** np.arange(self.jn)[:, None])  # (jn, N)
         bias_integrands_all *= factor_l[:, None, :]
-        # l=0: subtract value at q=qint[-1] (large-q DC removal).
+        if self.linear_subtraction:
+            # linear pieces at fixed l: matter (l = 0, 2), b1 (l = 1), b1^2 and counterterm (l = 0)
+            Xf = self.Xlin + self.Xlin_gt; Yf = self.Ylin + self.Ylin_gt
+            bias_integrands_all[0, 0, :] -= -0.5 * Ksq * (Xf + Yf / 3.)
+            bias_integrands_all[2, 0, :] -= 0.5 * Ksq * Yf * (self.c**2 - 1. / 3.)
+            bias_integrands_all[1, 1, :] -= -2. * K * self.Ulin * self.c
+            bias_integrands_all[0, 2, :] -= self.corlin
+            bias_integrands_all[0, -1, :] -= self.corlin
+        # l=0: subtract value at q=qint[-1] (large-q limit).
         bias_integrands_all[0] -= bias_integrands_all[0, :, -1:]
+        if self.linear_subtraction:
+            bias_integrands_all *= self._taper[None, None, :]
 
         # Still one FFTLog per l (different Bessel order).
         for l in range(self.jn):
             ktemps, bias_ffts = self.sph.sph(l, bias_integrands_all[l])
-            idx = np.searchsorted(ktemps, k)
-            if idx < 1:
-                idx = 1
-            elif idx > len(ktemps) - 1:
-                idx = len(ktemps) - 1
-            x0 = ktemps[idx-1]; x1 = ktemps[idx]
-            w = (k - x0) / (x1 - x0)
-            ret += bias_ffts[:, idx-1] + w * (bias_ffts[:, idx] - bias_ffts[:, idx-1])
+            ret += _interp_k(k, ktemps, bias_ffts)
+
+        if self.linear_subtraction:
+            # add the linear terms back: (1 + f nu^2)^2 P, 2 (1 + f nu^2) P, P, P
+            plin_k = self._plin_exact(k) / (4. * np.pi)
+            kais = 1. + self.f * self.nu**2
+            ret[0] += kais**2 * plin_k; ret[1] += 2. * kais * plin_k; ret[2] += plin_k; ret[-1] += plin_k
 
         return 4*suppress*np.pi*ret
         
@@ -599,6 +656,12 @@ class LPT_RSD:
         # its Legendre multipoles as the damped linear multipoles.
         self.presknutable = np.zeros((len(nus), nk))
 
+        # AP-distorted (k_true, nu_true) at every GL node — saved so callers
+        # can build extra counter-terms with mu-structure not factorisable in
+        # the existing pknutable monomial basis (e.g. (b + f mu^2)^2 prefactors).
+        self.ktrue_table = np.zeros((len(nus), nk))
+        self.nu_true_arr = np.zeros(len(nus))
+
 
         # To implement AP:
         # Calculate P(k,nu) at the true coordinates, given by
@@ -612,6 +675,9 @@ class LPT_RSD:
             k_apfac = fac / aperp
             nu_true = nu * aperp/apar/fac
             vol_fac = apar * aperp**2
+
+            self.ktrue_table[ii, :] = k_apfac * kv
+            self.nu_true_arr[ii]    = nu_true
 
             self.setup_rsd_facs(f,nu_true,nmax=nmax)
 
@@ -644,6 +710,9 @@ class LPT_RSD:
 
         self.pknutable[ngauss:,:,:] = np.flip(self.pknutable[0:ngauss],axis=0)
         self.presknutable[ngauss:,:] = np.flip(self.presknutable[0:ngauss], axis=0)
+        # ktrue is even in nu (k_apfac depends on nu^2); nu_true is odd in nu.
+        self.ktrue_table[ngauss:, :] = np.flip(self.ktrue_table[0:ngauss, :], axis=0)
+        self.nu_true_arr[ngauss:]    = -np.flip(self.nu_true_arr[0:ngauss], axis=0)
 
         self.kv = kv
         self.p0ktable = 0.5 * np.sum((ws*L0)[:,None,None]*self.pknutable,axis=0) / vol_fac
@@ -653,6 +722,16 @@ class LPT_RSD:
         self.pres0ktable = 0.5 * np.sum((ws*L0)[:,None]*self.presknutable, axis=0) / vol_fac
         self.pres2ktable = 2.5 * np.sum((ws*L2)[:,None]*self.presknutable, axis=0) / vol_fac
         self.pres4ktable = 4.5 * np.sum((ws*L4)[:,None]*self.presknutable, axis=0) / vol_fac
+
+        # GL grid + Legendre values + AP volume factor — saved so downstream
+        # likelihood code can build custom mu-dependent counter-term multipoles
+        # without re-deriving the integration grid.
+        self.gl_nus  = nus
+        self.gl_ws   = ws
+        self.gl_L0   = L0
+        self.gl_L2   = L2
+        self.gl_L4   = L4
+        self.vol_fac = vol_fac
 
         return 0
 
@@ -903,7 +982,7 @@ class LPT_RSD:
         kq_fac = -2.0 / (k * self.qint)
         factor_l = expon[None, :] * (kq_fac[None, :] ** np.arange(self.jn)[:, None])
         bias_integrand_all *= factor_l
-        # l=0 DC subtraction (original did bias_integrand -= bias_integrand[-1] on the
+        # l=0 large-q subtraction (original did bias_integrand -= bias_integrand[-1] on the
         # 1D array, i.e. subtract the value at q=qint[-1]).
         bias_integrand_all[0] -= bias_integrand_all[0, -1]
 

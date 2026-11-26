@@ -4,6 +4,29 @@ from velocileptors.Utils.loginterp import loginterp
 from velocileptors.Utils.spherical_bessel_transform import SphericalBesselTransform
 
 
+def _interp_cubic_log(xnew, x, y):
+    '''
+        Vectorized local 4-point (cubic) Lagrange interpolation in ln(x) of y(x)
+        onto xnew, using the same stencil as LPT_RSD's _interp_k: the 4 nodes
+        centred on each target point, clipped at the ends of the grid.
+        Targets outside [x[0], x[-1]] keep np.interp's behaviour (held at the
+        end value) rather than being extrapolated with a cubic.
+    '''
+    lx = np.log(x); lxn = np.log(xnew)
+    i = np.clip(np.searchsorted(lx, lxn) - 2, 0, len(lx) - 4)
+    idx = i[:, None] + np.arange(4)                      # (M, 4) stencil indices
+    xs = lx[idx]
+    w = np.ones(idx.shape)
+    for j in range(4):
+        for m in range(4):
+            if m != j:
+                w[:, j] *= (lxn - xs[:, m]) / (xs[:, j] - xs[:, m])
+    out = np.sum(y[idx] * w, axis=1)
+    outside = (xnew < x[0]) | (xnew > x[-1])
+    if np.any(outside):
+        out[outside] = np.interp(xnew[outside], x, y)
+    return out
+
 
 class QFuncFFT:
     '''
@@ -229,12 +252,12 @@ class QFuncFFT:
             qrange = (qs > qmin) * (qs < qmax)
             return loginterp(qs[qrange],xint[qrange],side=side)(self.qv)
         else:
-            return np.interp(self.qv, qs, xint)
+            return _interp_cubic_log(self.qv, qs, xint)
 
     def template_QR(self,l,integrand):
         '''
         Interpolates the Hankel transformed R(k), Q(k) back onto self.k
         '''
         kQR, QR = self.sphr.sph(l,integrand)
-        return np.interp(self.k, kQR, QR)
+        return _interp_cubic_log(self.k, kQR, QR)
 
