@@ -40,11 +40,12 @@ class LPT_RSD_Batched(LPT_RSD):
     Everything else (combine_bias_terms_*, setup_rsd_facs, ...) is inherited.
     """
 
-    def __init__(self, *args, k_chunk=None, n_workers=1, **kwargs):
+    def __init__(self, *args, k_chunk=None, n_workers='auto', **kwargs):
         # k_chunk: evaluate p_integrals in blocks of this many k (None = all at once). All-at-once makes the
         # (nk, jn, ncol, N) intermediates memory-bound for large N; blocks of ~16-32 k keep them cache-sized.
         # n_workers: evaluate the k blocks of each mu concurrently on this many threads (numpy and pyfftw release
-        # the GIL). 'auto' = OMP_NUM_THREADS. With n_workers > 1 and k_chunk None, k is split into n_workers blocks.
+        # the GIL). 'auto' (default) = OMP_NUM_THREADS; 1 = serial blocks. With n_workers > 1 and k_chunk None, k is split
+        # into n_workers blocks.
         # Each worker thread gets its own SphericalBesselTransform (they hold FFTW work buffers), run with FFTW
         # threads = 1. Results are identical to the serial path (blocks are independent; same arithmetic).
         self.k_chunk = k_chunk

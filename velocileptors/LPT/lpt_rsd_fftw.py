@@ -67,7 +67,7 @@ class LPT_RSD:
                 use_Pzel = False, third_order = True, shear=True, one_loop=True,\
                 kIR = None, cutoff=10, extrap_min=-4, extrap_max=1, N=256, jn=5, threads=None,
                 extrap_min_corrfunc=-5, extrap_max_corrfunc=3, N_corrfunc=2000,
-                linear_subtraction=False, q_taper_decades=1.):
+                linear_subtraction=True, q_taper_decades=1.):
 
         self.N = N
         self.extrap_max = extrap_max
@@ -112,7 +112,8 @@ class LPT_RSD:
         # Use Pzel vs Pb1^2 for the counterterms
         self.use_Pzel = use_Pzel
 
-        # Linear subtraction: FFTLog only the non-linear remainder, add linear theory back exactly at k (p_integrals)
+        # Linear subtraction (default on): FFTLog only the non-linear remainder, add linear theory back exactly at k
+        # (p_integrals). linear_subtraction=False recovers the original (all-FFTLog) calculation.
         self.linear_subtraction = linear_subtraction
         if linear_subtraction:
             spl = loginterp(k, p); c = self.cutoff
